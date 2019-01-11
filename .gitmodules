@@ -1,0 +1,12 @@
+[submodule "third_party/Pham"]
+	path = third_party/Pham
+	url = https://github.com/Svengali/Pham
+[submodule "third_party/cblib"]
+	path = third_party/cblib
+	url = https://github.com/Svengali/cblib
+[submodule "third_party/DiligentTools"]
+	path = third_party/DiligentTools
+	url = https://github.com/Svengali/DiligentTools
+[submodule "third_party/DiligentCore"]
+	path = third_party/DiligentCore
+	url = https://github.com/Svengali/DiligentCore
