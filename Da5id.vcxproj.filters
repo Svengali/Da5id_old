@@ -28,15 +28,6 @@
     <ClCompile Include="src\DDSTextureLoader.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="third_party\imgui\imgui.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\imgui\imgui_demo.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\util.h">
@@ -72,24 +63,6 @@
     <ClInclude Include="src\d3dx12.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="third_party\imgui\imconfig.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="third_party\imgui\imgui.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="third_party\imgui\imgui_internal.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="third_party\imgui\stb_rect_pack.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="third_party\imgui\stb_textedit.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="third_party\imgui\stb_truetype.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -97,9 +70,6 @@
     </Filter>
     <Filter Include="shaders">
       <UniqueIdentifier>{c22c0370-2114-4f7e-b967-71fa3ffc0fc6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="imgui">
-      <UniqueIdentifier>{f3a6c944-7db5-4069-897b-35fd88b80053}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

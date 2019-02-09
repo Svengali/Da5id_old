@@ -38,18 +38,6 @@
     </ClCompile>
     <ClCompile Include="src\simulation.cpp" />
     <ClCompile Include="src\texture.cpp" />
-    <ClCompile Include="third_party\imgui\imgui.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="third_party\imgui\imgui_demo.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="third_party\imgui\imgui_draw.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camera.h" />
@@ -63,12 +51,6 @@
     <ClInclude Include="src\simulation.h" />
     <ClInclude Include="src\texture.h" />
     <ClInclude Include="src\util.h" />
-    <ClInclude Include="third_party\imgui\imconfig.h" />
-    <ClInclude Include="third_party\imgui\imgui.h" />
-    <ClInclude Include="third_party\imgui\imgui_internal.h" />
-    <ClInclude Include="third_party\imgui\stb_rect_pack.h" />
-    <ClInclude Include="third_party\imgui\stb_textedit.h" />
-    <ClInclude Include="third_party\imgui\stb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="third_party\cblib\cblib.vcxproj">
@@ -380,7 +362,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;STBRP_STATIC;STB_RECT_PACK_IMPLEMENTATION;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -406,7 +388,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;STBRP_STATIC;STB_RECT_PACK_IMPLEMENTATION;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -433,7 +415,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;STBRP_STATIC;STB_RECT_PACK_IMPLEMENTATION;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -455,7 +437,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;STBRP_STATIC;STB_RECT_PACK_IMPLEMENTATION;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
