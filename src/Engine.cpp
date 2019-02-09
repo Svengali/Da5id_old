@@ -115,7 +115,7 @@ void Engine::InitDevice(HWND hWnd, DeviceType DevType)
         case DeviceType::Vulkan:
         {
             EngineVkAttribs Attribs;
-            Attribs.DynamicHeapSize = 64 << 20;
+            Attribs.DynamicHeapSize = 256 * 1024 * 1024;
 #if ENGINE_DLL
             if(!GetEngineFactoryVulkan)
                 LoadGraphicsEngineVk(GetEngineFactoryVulkan);
@@ -255,7 +255,7 @@ Engine::Engine(const Settings &settings, AsteroidsSimulation* pAst, GUI* gui, HW
             samDesc.Desc.AddressU        = TEXTURE_ADDRESS_WRAP;
             samDesc.Desc.AddressV        = TEXTURE_ADDRESS_WRAP;
             samDesc.Desc.AddressW        = TEXTURE_ADDRESS_WRAP;
-            samDesc.Desc.MinLOD          = -D3D11_FLOAT32_MAX;
+            samDesc.Desc.MinLOD          =-D3D11_FLOAT32_MAX;
             samDesc.Desc.MaxLOD          = D3D11_FLOAT32_MAX;
             samDesc.Desc.MipLODBias      = 0.0f;
             samDesc.Desc.MaxAnisotropy   = TEXTURE_ANISO;

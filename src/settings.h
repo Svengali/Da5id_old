@@ -20,7 +20,7 @@
 #ifdef _DEBUG
 enum { NUM_ASTEROIDS = 2000 };
 #else
-enum { NUM_ASTEROIDS = 50000 };
+enum { NUM_ASTEROIDS = 400000 };
 #endif
 enum { TEXTURE_DIM = 256 }; // Req'd to be pow2 at the moment
 enum { TEXTURE_ANISO = 2 };
@@ -34,15 +34,15 @@ enum { MESH_MAX_SUBDIV_LEVELS = 3 }; // 4x polys for each step.
 
 // In FLIP swap chains the compositor owns one of your buffers at any given point
 // Thus to run unconstrained (>vsync) frame rates, you need 3 buffers
-enum { NUM_SWAP_CHAIN_BUFFERS = 5 };
+enum { NUM_SWAP_CHAIN_BUFFERS = 3 };
 
 // In D3D12, this is the pipeline depth in frames - larger = more latency, shorter = potential bubbles.
 // Usually 2-4 are good values.
-enum { NUM_FRAMES_TO_BUFFER = 3 };
+enum { NUM_FRAMES_TO_BUFFER = 1 };
 
 // In D3D12 this is the number of command buffers we generate for the main scene rendering
 // Also effectively max thread parallelism
-enum { NUM_SUBSETS = 4 };
+enum { NUM_SUBSETS = 16 };
 
 // Buffer size for dynamic sprite data
 enum { MAX_SPRITE_VERTICES_PER_FRAME = 6 * 1024 };
@@ -90,6 +90,6 @@ struct Settings
 #endif
 
     bool submitRendering = true;
-    bool executeIndirect = false;
+    bool executeIndirect = true;
     bool warp = false;
 };

@@ -38,6 +38,18 @@
     </ClCompile>
     <ClCompile Include="src\simulation.cpp" />
     <ClCompile Include="src\texture.cpp" />
+    <ClCompile Include="third_party\imgui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_demo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camera.h" />
@@ -51,6 +63,12 @@
     <ClInclude Include="src\simulation.h" />
     <ClInclude Include="src\texture.h" />
     <ClInclude Include="src\util.h" />
+    <ClInclude Include="third_party\imgui\imconfig.h" />
+    <ClInclude Include="third_party\imgui\imgui.h" />
+    <ClInclude Include="third_party\imgui\imgui_internal.h" />
+    <ClInclude Include="third_party\imgui\stb_rect_pack.h" />
+    <ClInclude Include="third_party\imgui\stb_textedit.h" />
+    <ClInclude Include="third_party\imgui\stb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="third_party\cblib\cblib.vcxproj">

@@ -10,3 +10,6 @@
 [submodule "third_party/DiligentCore"]
 	path = third_party/DiligentCore
 	url = https://github.com/Svengali/DiligentCore
+[submodule "third_party/imgui"]
+	path = third_party/imgui
+	url = https://github.com/Svengali/imgui
