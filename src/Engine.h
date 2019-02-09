@@ -26,8 +26,9 @@
 
 #include "gui.h"
 
-/*
 #include "simulation.h"
+
+/*
 #include "util.h"
 */
 
@@ -49,7 +50,7 @@ struct SkyboxConstantBuffer {
 class Engine
 {
 public:
-	Engine(const Settings &settings, GUI* gui, HWND hWnd, Diligent::DeviceType DevType);
+	Engine(const Settings &settings, AsteroidsSimulation *pAst, GUI* gui, HWND hWnd, Diligent::DeviceType DevType);
     ~Engine();
 
     void Render(float frameTime, const OrbitCamera& camera, const Settings& settings);
@@ -71,6 +72,9 @@ private:
         Mutable = 1,
         TextureMutable = 2
     }m_BindingMode = BindingMode::TextureMutable;
+
+
+	AsteroidsSimulation* m_pAst = nullptr;
 
     GUI*                        mGUI = nullptr;
 

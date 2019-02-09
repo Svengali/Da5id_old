@@ -235,7 +235,7 @@ LRESULT CALLBACK WindowProc(
 
 		case VK_ADD:
 		case VK_OEM_PLUS:
-			gSettings.numThreads = std::min( gSettings.numThreads + 1, 16 );
+			gSettings.numThreads = std::min( gSettings.numThreads + 1, 64 );
 			gUpdateWorkload = true;
 			return 0;
 		case VK_SUBTRACT:
@@ -304,7 +304,7 @@ LRESULT CALLBACK WindowProc(
 			}
 
 			// Otherwise send it to the camera controls
-			//gCamera.ProcessPointerFrames( pointerId, &pointerInfo );
+			gCamera.ProcessPointerFrames( pointerId, &pointerInfo );
 			if( message == WM_POINTERUP ) gCamera.RemovePointer( pointerId );
 		}
 		return 0;
@@ -324,7 +324,7 @@ LRESULT CALLBACK WindowProc(
 }
 
 //*
-int InitWorkload( HWND hWnd )
+int InitWorkload( HWND hWnd, AsteroidsSimulation *pAst )
 {
 	switch( gSettings.mode )
 	{
@@ -375,7 +375,7 @@ int InitWorkload( HWND hWnd )
 	*/
 
 	case Settings::RenderMode::DiligentVulkan:
-		gWorkloadDE = new grx::Engine( gSettings, &gGUI, hWnd, Diligent::DeviceType::Vulkan );
+		gWorkloadDE = new grx::Engine( gSettings, pAst, &gGUI, hWnd, Diligent::DeviceType::Vulkan );
 		break;
 	}
 
@@ -438,6 +438,9 @@ int main( int argc, char** argv )
 	// Scale default window size based on dpi
 	gSettings.windowWidth *= dpi / 96;
 	gSettings.windowHeight *= dpi / 96;
+
+	gSettings.multithreadedRendering = true;
+
 
 	gSettings.mode = Settings::RenderMode::Undefined;
 	for( int a = 1; a < argc; ++a ) {
@@ -517,11 +520,8 @@ int main( int argc, char** argv )
 	// Setup GUI
 	gFPSControl = gGUI.AddText( 150, 10 );
 
-	/*
-	// Camera projection set up in WM_SIZE
 
 	AsteroidsSimulation asteroids( 1337, NUM_ASTEROIDS, NUM_UNIQUE_MESHES, MESH_MAX_SUBDIV_LEVELS, NUM_UNIQUE_TEXTURES );
-	//*/
 
 	ResetCameraView();
 
@@ -598,7 +598,7 @@ int main( int argc, char** argv )
 			if( hWnd == NULL || gLastFrameRenderMode != gSettings.mode )
 				CreateDemoWindow( hWnd );
 
-			InitWorkload( hWnd );
+			InitWorkload( hWnd, &asteroids );
 
 			gLastFrameRenderMode = gSettings.mode;
 			gUpdateWorkload = false;
@@ -665,17 +665,19 @@ int main( int argc, char** argv )
 			filteredFrameTime = filteredFrameTime * ( 1.f - filterScale ) + filterScale * (float)frameTime;
 
 			char buffer[256];
-			sprintf_s( buffer, "Asteroids %s%s (%dt) - %4.2f ms (%4.2f ms / %4.2f ms)", ModeStr, resBindModeStr, ( gSettings.multithreadedRendering ? gSettings.numThreads : 1 ),
+			sprintf_s( buffer, "Da5id %s%s (%dt) - %4.2f ms (%4.2f ms / %4.2f ms)", ModeStr, resBindModeStr, ( gSettings.multithreadedRendering ? gSettings.numThreads : 1 ),
 				1000.f * filteredFrameTime, 1000.f * filteredUpdateTime, 1000.f * filteredRenderTime );
 
 			SetWindowTextA( hWnd, buffer );
 
+			/*
 			if( gSettings.lockFrameRate ) {
 				sprintf_s( buffer, "(Locked)" );
 			}
 			else {
 				sprintf_s( buffer, "%.0f fps", 1.0f / filteredFrameTime );
 			}
+			*/
 			gFPSControl->Text( buffer );
 		}
 

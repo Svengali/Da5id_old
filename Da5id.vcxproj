@@ -21,22 +21,35 @@
   <ItemGroup>
     <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\Da5id.cpp" />
+    <ClCompile Include="src\DDSTextureLoader.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\mesh.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\simplexnoise1234.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\simulation.cpp" />
+    <ClCompile Include="src\texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camera.h" />
+    <ClInclude Include="src\d3dx12.h" />
+    <ClInclude Include="src\dds.h" />
+    <ClInclude Include="src\DDSTextureLoader.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\mesh.h" />
     <ClInclude Include="src\noise.h" />
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\simulation.h" />
+    <ClInclude Include="src\texture.h" />
     <ClInclude Include="src\util.h" />
   </ItemGroup>
   <ItemGroup>
@@ -55,9 +68,6 @@
     <ProjectReference Include="third_party\DiligentCore\Graphics\GraphicsEngineD3DBase\GraphicsEngineD3DBase.vcxproj">
       <Project>{8756b1a2-c430-3494-98cc-fdd164d37beb}</Project>
     </ProjectReference>
-    <ProjectReference Include="third_party\DiligentCore\Graphics\GraphicsEngineD3DBase\ProcessHLSLDefinitions.vcxproj">
-      <Project>{8beb7f90-047a-3eb2-afee-0bdfcc2a4d5d}</Project>
-    </ProjectReference>
     <ProjectReference Include="third_party\DiligentCore\Graphics\GraphicsEngineNextGenBase\GraphicsEngineNextGenBase.vcxproj">
       <Project>{67943c00-b031-326a-9305-ce640280a16d}</Project>
     </ProjectReference>
@@ -67,9 +77,6 @@
     <ProjectReference Include="third_party\DiligentCore\Graphics\GraphicsEngineVulkan\GraphicsEngineVk-static.vcxproj">
       <Project>{d06d0e2e-0c55-3843-b5b0-4c0712b66bff}</Project>
     </ProjectReference>
-    <ProjectReference Include="third_party\DiligentCore\Graphics\GraphicsEngineVulkan\ProcessGenerateMipsVkShader.vcxproj">
-      <Project>{c1308caf-9e26-33c8-9df0-e88645eb7706}</Project>
-    </ProjectReference>
     <ProjectReference Include="third_party\DiligentCore\Graphics\GraphicsEngine\GraphicsEngine.vcxproj">
       <Project>{068d90b5-80db-35f7-9a57-f8634f16157b}</Project>
     </ProjectReference>
@@ -78,9 +85,6 @@
     </ProjectReference>
     <ProjectReference Include="third_party\DiligentCore\Graphics\HLSL2GLSLConverterLib\HLSL2GLSLConverterLib.vcxproj">
       <Project>{3083888e-2427-3c0f-b6e2-d2f371c6bb8b}</Project>
-    </ProjectReference>
-    <ProjectReference Include="third_party\DiligentCore\Graphics\HLSL2GLSLConverterLib\ProcessGLSLDefinitions.vcxproj">
-      <Project>{afb37db5-4984-35ba-9e27-03e41f521f31}</Project>
     </ProjectReference>
     <ProjectReference Include="third_party\DiligentCore\Platforms\Basic\BasicPlatform.vcxproj">
       <Project>{233554b1-5def-3832-9a5f-11eb772b4e72}</Project>
@@ -299,26 +303,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -358,12 +362,19 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>false</OmitFramePointers>
+      <MinimalRebuild>true</MinimalRebuild>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -377,12 +388,18 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>true</MinimalRebuild>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -393,43 +410,53 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ninput.lib;winmm.lib;dxgi.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ninput.lib;winmm.lib;dxgi.lib;shcore.lib;third_party\DiligentCore\Platforms\Win32\Release\Win32Platform.lib;third_party\DiligentTools\TextureLoader\Release\TextureLoader.lib;third_party\DiligentCore\Common\Release\Common.lib;third_party\DiligentCore\Graphics\GraphicsTools\Release\GraphicsTools.lib;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\Release\GraphicsEngineVk-static.lib;third_party\DiligentCore\Graphics\GraphicsEngineNextGenBase\Release\GraphicsEngineNextGenBase.lib;third_party\DiligentCore\Graphics\GraphicsEngine\Release\GraphicsEngine.lib;third_party\DiligentCore\Graphics\GraphicsAccessories\Release\GraphicsAccessories.lib;third_party\DiligentCore\Platforms\Basic\Release\BasicPlatform.lib;third_party\DiligentCore\Primitives\Release\Primitives.lib;third_party\DiligentTools\External\libjpeg-9a\Release\LibJpeg.lib;third_party\DiligentTools\External\libtiff-4.0.3\Release\LibTiff.lib;third_party\DiligentTools\External\lpng-1.6.17\Release\LibPng.lib;third_party\DiligentTools\External\zlib-1.2.8\Release\ZLib.lib;third_party\DiligentCore\External\vulkan\libs\vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <StringPooling>true</StringPooling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ninput.lib;winmm.lib;dxgi.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ninput.lib;winmm.lib;dxgi.lib;shcore.lib;third_party\DiligentCore\Platforms\Win32\Release\Win32Platform.lib;third_party\DiligentTools\TextureLoader\Release\TextureLoader.lib;third_party\DiligentCore\Common\Release\Common.lib;third_party\DiligentCore\Graphics\GraphicsTools\Release\GraphicsTools.lib;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\Release\GraphicsEngineVk-static.lib;third_party\DiligentCore\Graphics\GraphicsEngineNextGenBase\Release\GraphicsEngineNextGenBase.lib;third_party\DiligentCore\Graphics\GraphicsEngine\Release\GraphicsEngine.lib;third_party\DiligentCore\Graphics\GraphicsAccessories\Release\GraphicsAccessories.lib;third_party\DiligentCore\Platforms\Basic\Release\BasicPlatform.lib;third_party\DiligentCore\Primitives\Release\Primitives.lib;third_party\DiligentTools\External\libjpeg-9a\Release\LibJpeg.lib;third_party\DiligentTools\External\libtiff-4.0.3\Release\LibTiff.lib;third_party\DiligentTools\External\lpng-1.6.17\Release\LibPng.lib;third_party\DiligentTools\External\zlib-1.2.8\Release\ZLib.lib;third_party\DiligentCore\External\vulkan\libs\vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -160,9 +160,10 @@ void Engine::InitDevice(HWND hWnd, DeviceType DevType)
     }
 }
 
-Engine::Engine(const Settings &settings, GUI* gui, HWND hWnd, Diligent::DeviceType DevType)
+Engine::Engine(const Settings &settings, AsteroidsSimulation* pAst, GUI* gui, HWND hWnd, Diligent::DeviceType DevType)
 	:
-    mGUI(gui)
+	m_pAst( pAst ),
+    mGUI( gui )
 {
     QueryPerformanceFrequency((LARGE_INTEGER*)&mPerfCounterFreq);
 
@@ -479,13 +480,11 @@ Engine::Engine(const Settings &settings, GUI* gui, HWND hWnd, Diligent::DeviceTy
     InitializeTextureData();
     if( m_BindingMode == BindingMode::Mutable )
     {
-		/*
         for(size_t srb = 0; srb < NUM_ASTEROIDS; ++srb)
         {
-            auto staticData = &mAsteroids->StaticData()[srb];
+            auto staticData = &m_pAst->StaticData()[srb];
             mAsteroidsSRBs[srb]->GetVariable(SHADER_TYPE_PIXEL, "Tex")->Set(mTextureSRVs[staticData->textureIndex]);
         }
-		*/
     }
     else if( m_BindingMode == BindingMode::TextureMutable )
     {
@@ -525,8 +524,8 @@ void Engine::CreateMeshes()
 	std::vector<StateTransitionDesc> Barriers;
 
 
-	/*
-    auto asteroidMeshes = mAsteroids->Meshes();
+	//*
+    auto asteroidMeshes = m_pAst->Meshes();
 
     // create vertex buffer
     {
@@ -559,7 +558,7 @@ void Engine::CreateMeshes()
         mDevice->CreateBuffer(desc, data, &mIndexBuffer);
         Barriers.emplace_back(mIndexBuffer, RESOURCE_STATE_UNKNOWN, RESOURCE_STATE_INDEX_BUFFER, true);
     }
-	*/
+	//*/
 
 
     std::vector<SkyboxVertex> skyboxVertices;
@@ -600,23 +599,23 @@ void Engine::CreateMeshes()
 void Engine::InitializeTextureData()
 {
     TextureDesc textureDesc;
-    textureDesc.Type = RESOURCE_DIM_TEX_2D_ARRAY;
-    textureDesc.Width            = TEXTURE_DIM;
-    textureDesc.Height           = TEXTURE_DIM;
-    textureDesc.ArraySize        = 3;
-    textureDesc.MipLevels        = 0; // Full chain
-    textureDesc.Format           = TEX_FORMAT_RGBA8_UNORM_SRGB;
-    textureDesc.SampleCount      = 1;
-    textureDesc.Usage            = USAGE_DEFAULT;
-    textureDesc.BindFlags        = BIND_SHADER_RESOURCE;
+    textureDesc.Type			= RESOURCE_DIM_TEX_2D_ARRAY;
+    textureDesc.Width           = TEXTURE_DIM;
+    textureDesc.Height          = TEXTURE_DIM;
+    textureDesc.ArraySize       = 3;
+    textureDesc.MipLevels       = 0; // Full chain
+    textureDesc.Format          = TEX_FORMAT_RGBA8_UNORM_SRGB;
+    textureDesc.SampleCount     = 1;
+    textureDesc.Usage           = USAGE_DEFAULT;
+    textureDesc.BindFlags       = BIND_SHADER_RESOURCE;
 
     std::vector<StateTransitionDesc> Barriers;
 
-	/*
+	//*
     for (UINT t = 0; t < NUM_UNIQUE_TEXTURES; ++t) 
 	{
-        std::vector<TextureSubResData> subResData(size_t{textureDesc.ArraySize} * size_t{mAsteroids->GetTextureMipLevels()});
-        auto *texData = mAsteroids->TextureData(t);
+        std::vector<TextureSubResData> subResData( size_t{textureDesc.ArraySize} * size_t{ m_pAst->GetTextureMipLevels() } );
+        auto *texData = m_pAst->TextureData(t);
         for(size_t subRes=0; subRes < subResData.size(); ++subRes)
         {
             subResData[subRes].pData = texData[subRes].pSysMem;
@@ -633,7 +632,7 @@ void Engine::InitializeTextureData()
     }
 
     mDeviceCtxt->TransitionResourceStates(static_cast<Uint32>(Barriers.size()), Barriers.data());
-	*/
+	//*/
 }
 
 void Engine::CreateGUIResources()
@@ -693,7 +692,7 @@ void Engine::WorkerThreadFunc(Engine *pThis, Diligent::Uint32 ThreadNum)
         auto SubsetStart = SubsetSize * (ThreadNum+1);
         auto &FrameAttribs = pThis->mFrameAttribs;
         
-        //pThis->mAsteroids->Update(FrameAttribs.frameTime, FrameAttribs.camera->Eye(), *FrameAttribs.settings, SubsetStart, SubsetSize);
+        pThis->m_pAst->Update(FrameAttribs.frameTime, FrameAttribs.camera->Eye(), *FrameAttribs.settings, SubsetStart, SubsetSize);
         
         // Increment number of completed threads
         ++pThis->m_NumThreadsCompleted;
@@ -722,8 +721,8 @@ void Engine::RenderSubset(Diligent::Uint32 SubsetNum,
     pCtx->SetRenderTargets(0, nullptr, nullptr, RESOURCE_STATE_TRANSITION_MODE_VERIFY);
     
     // Frame data
-    //auto staticAsteroidData = mAsteroids->StaticData();
-    //auto dynamicAsteroidData = mAsteroids->DynamicData();
+    auto staticAsteroidData = m_pAst->StaticData();
+    auto dynamicAsteroidData = m_pAst->DynamicData();
     
     pCtx->SetPipelineState(mAsteroidsPSO);
 
@@ -737,7 +736,7 @@ void Engine::RenderSubset(Diligent::Uint32 SubsetNum,
     auto pVar = m_BindingMode == BindingMode::Dynamic ? mAsteroidsSRBs[SubsetNum]->GetVariable(SHADER_TYPE_PIXEL, "Tex") : nullptr;
     auto viewProjection = camera.ViewProjection();
 
-	/*
+	//*
     for (UINT drawIdx = startIdx; drawIdx < startIdx+numAsteroids; ++drawIdx)
     {
         auto staticData = &staticAsteroidData[drawIdx];
@@ -770,7 +769,7 @@ void Engine::RenderSubset(Diligent::Uint32 SubsetNum,
         attribs.BaseVertex = staticData->vertexStart;
         pCtx->Draw(attribs);
     }
-	*/
+	//*/
 }
 
 void Engine::Render(float frameTime, const OrbitCamera& camera, const Settings& settings)
@@ -797,7 +796,7 @@ void Engine::Render(float frameTime, const OrbitCamera& camera, const Settings& 
         mUpdateSubsetsSignal.Trigger(true);
     }
 
-    //mAsteroids->Update(frameTime, camera.Eye(), settings, 0, SubsetSize);
+    m_pAst->Update(frameTime, camera.Eye(), settings, 0, SubsetSize);
 
     if (settings.multithreadedRendering)
     {
@@ -847,10 +846,9 @@ void Engine::Render(float frameTime, const OrbitCamera& camera, const Settings& 
     for(auto& ctx : mDeferredCtxt)
         ctx->FinishFrame();
 
-    QueryPerformanceCounter((LARGE_INTEGER*)&currCounter);
-    mRenderTicks = currCounter-mRenderTicks;
-
     mDeviceCtxt->SetRenderTargets(0, nullptr, nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+	/*
     // Draw skybox
     {
         {
@@ -868,7 +866,9 @@ void Engine::Render(float frameTime, const OrbitCamera& camera, const Settings& 
         DrawAttribs DrawAttrs(6*6, DRAW_FLAG_VERIFY_STATES);
         mDeviceCtxt->Draw(DrawAttrs);
     }
+	//*/
 
+	//*
     // Draw sprites and fonts
     {
         // Fill in vertices (TODO: could move this vector to be a member - not a big deal)
@@ -911,8 +911,14 @@ void Engine::Render(float frameTime, const OrbitCamera& camera, const Settings& 
             vertexStart += controlVertices[1+i];
         }
     }
+	//*/
 
-    mSwapChain->Present(settings.vsync ? 1 : 0);
+	QueryPerformanceCounter( (LARGE_INTEGER*)& currCounter );
+	mRenderTicks = currCounter - mRenderTicks;
+
+	mSwapChain->Present( settings.vsync ? 1 : 0 );
+
+
 }
 
 void Engine::GetPerfCounters(float &UpdateTime, float &RenderTime)
