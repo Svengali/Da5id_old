@@ -11,9 +11,26 @@
 #include "pch.h"
 
 
+
+// MOVETO PCH
+#include "vox/vox.h"
+
+
+
+
+// LOCAL
+
 #include "Engine.h"
 #include "util.h"
 #include <d3d11_4.h>
+
+#include "imgui.h"
+
+#include "imgui_impl_vulkan.h"
+#include "imgui_impl_win32.h"
+
+#include "vulkan\vulkan.h"
+
 
 /**
 #include "asteroids_d3d11.h"
@@ -40,6 +57,9 @@ namespace {
 	Settings::RenderMode gLastFrameRenderMode = static_cast<Settings::RenderMode>( -1 );
 
 	OrbitCamera gCamera;
+
+	ImGui_ImplVulkanH_WindowData g_WindowData;
+
 
 	/**
 
@@ -131,7 +151,64 @@ namespace {
 	}
 
 
+	static void SetupVulkanWindowData( ImGui_ImplVulkanH_WindowData* wd, VkDevice dev, VkPhysicalDevice devPhysical, VkAllocationCallbacks* pAllocator, VkSurfaceKHR surface, int width, int height )
+	{
+		wd->Surface = surface;
+
+
+		uint32_t queueFamily = (uint32_t)-1;
+
+		// Select graphics queue family
+		{
+			uint32_t count;
+			vkGetPhysicalDeviceQueueFamilyProperties( devPhysical, &count, NULL );
+			VkQueueFamilyProperties* queues = (VkQueueFamilyProperties*)malloc( sizeof( VkQueueFamilyProperties ) * count );
+			vkGetPhysicalDeviceQueueFamilyProperties( devPhysical, &count, queues );
+			for( uint32_t i = 0; i < count; i++ )
+				if( queues[i].queueFlags& VK_QUEUE_GRAPHICS_BIT )
+				{
+					queueFamily = i;
+					break;
+				}
+			free( queues );
+			assert( queueFamily != -1 );
+		}
+
+
+		// Check for WSI support
+		VkBool32 res;
+		vkGetPhysicalDeviceSurfaceSupportKHR( devPhysical, queueFamily, wd->Surface, &res );
+		if( res != VK_TRUE )
+		{
+			fprintf( stderr, "Error no WSI support on physical device 0\n" );
+			exit( -1 );
+		}
+
+		// Select Surface Format
+		const VkFormat requestSurfaceImageFormat[] = { VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_B8G8R8_UNORM, VK_FORMAT_R8G8B8_UNORM };
+		const VkColorSpaceKHR requestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+		wd->SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat( devPhysical, wd->Surface, requestSurfaceImageFormat, (size_t)IM_ARRAYSIZE( requestSurfaceImageFormat ), requestSurfaceColorSpace );
+
+		// Select Present Mode
+#ifdef IMGUI_UNLIMITED_FRAME_RATE
+		VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_FIFO_KHR };
+#else
+		VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_FIFO_KHR };
+#endif
+		wd->PresentMode = ImGui_ImplVulkanH_SelectPresentMode( devPhysical, wd->Surface, &present_modes[0], IM_ARRAYSIZE( present_modes ) );
+		//printf("[vulkan] Selected PresentMode = %d\n", wd->PresentMode);
+
+		// Create SwapChain, RenderPass, Framebuffer, etc.
+		ImGui_ImplVulkanH_CreateWindowDataCommandBuffers( devPhysical, dev, queueFamily, wd, pAllocator );
+		ImGui_ImplVulkanH_CreateWindowDataSwapChainAndFramebuffer( devPhysical, dev, wd, pAllocator, width, height );
+	}
+
+
+
 } // namespace
+
+
+
 
 
 
@@ -421,6 +498,10 @@ void CreateDemoWindow( HWND& hWnd )
 int main( int argc, char** argv )
 {
 #if defined(_DEBUG) || defined(DEBUG)
+	_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG | _CRTDBG_MODE_WNDW );
+	_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDERR );
+
+
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
@@ -508,6 +589,17 @@ int main( int argc, char** argv )
 		gSettings.numThreads = std::max( std::thread::hardware_concurrency() - 1, 2u );
 	}
 
+
+
+
+
+	vox::testVox();
+
+
+
+
+
+
 	//if (!d3d11Available && !d3d12Available) {
 	//    fprintf(stderr, "error: neither D3D11 nor D3D12 available.\n");
 	//    return -1;
@@ -566,7 +658,7 @@ int main( int argc, char** argv )
 	float filteredUpdateTime = 0.0f;
 	float filteredRenderTime = 0.0f;
 	float filteredFrameTime = 0.0f;
-	for( ;;)
+	for(;;)
 	{
 		MSG msg = {};
 		while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) {
@@ -596,7 +688,54 @@ int main( int argc, char** argv )
 			delete gWorkloadDE;
 			gWorkloadDE = nullptr;
 			if( hWnd == NULL || gLastFrameRenderMode != gSettings.mode )
+			{
 				CreateDemoWindow( hWnd );
+
+
+
+				const auto pDev = gWorkloadDE->mDevice.RawPtr();
+
+				PROFILE(IMGUI_GENERATION);
+
+
+
+
+				ImGui_ImplVulkanH_WindowData windowData;
+				SetupVulkanWindowData( &windowData, nullptr, nullptr, nullptr, nullptr, gSettings.windowWidth, gSettings.windowHeight );
+
+				ImGui::CreateContext();
+				ImGuiIO& io = ImGui::GetIO(); (void)io;
+				//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+
+				// Setup Dear ImGui style
+				ImGui::StyleColorsDark();
+				//ImGui::StyleColorsClassic();
+
+				// Setup Platform/Renderer bindings
+
+				ImGui_ImplWin32_Init(hWnd);
+
+				ImGui_ImplVulkan_InitInfo init_info = {};
+
+				/*
+				///init_info.Instance = g_Instance;
+				init_info.PhysicalDevice = g_PhysicalDevice;
+				init_info.Device = g_Device;
+				///init_info.QueueFamily = g_QueueFamily;
+				///init_info.Queue = g_Queue;
+				init_info.PipelineCache = g_PipelineCache;
+				init_info.DescriptorPool = g_DescriptorPool;
+				init_info.Allocator = g_Allocator;
+				init_info.CheckVkResultFn = check_vk_result;
+				//*/
+
+
+				ImGui_ImplVulkan_Init( &init_info, windowData.RenderPass );
+
+
+			}
+
+
 
 			InitWorkload( hWnd, &asteroids );
 

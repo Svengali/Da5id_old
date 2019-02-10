@@ -47,6 +47,7 @@
 #include <thread>
 
 
+
 // Diligenty
 
 #if D3D11_SUPPORTED
@@ -70,10 +71,81 @@
 #include "MapHelper.h"
 
 
-
-
-
 #undef min
 #undef max
+
+#include <algorithm>
+#include <hash_map>
+
+
+//
+#include "cblib/Link.h"
+#include "cblib/Vec3.h"
+#include "cblib/Vec3i.h"
+#include "cblib/Frame3.h"
+#include "cblib/CRC.h"
+#include "cblib/Reflection.h"
+#include "cblib/AxialBox.h"
+#include "cblib/profiler.h"
+
+
+//Source level compiled in dependencies
+#include "tinyxml/tinyxml.h"
+#include "util/profile/profile.h"
+#include "util/concurrentqueue.h"
+#include "task/thread_pool.h"
+#include "task/ctpl.h"
+//#include "async++.h"
+#include "math/units.h"
+#include "math/units64.h"
+#include "util/index.h"
+#include "util/id.h"
+#include "util/expected_lite.h"
+#include "util/optional.h"
+#include "util/markable.h"
+#include "util/lvalue_ref.h"
+#include "util/not_null.h"
+#include "util/out_param.h"
+#include "util/tagged_bool.h"
+#include "util/util.h"
+
+#include "util/String.h"
+#include "util/Symbol.h"
+
+#include "util/Reflection.h"
+#include "util/XMLReader.h"
+
+#include "util/Clock.h"
+
+
+#include "util/Serialization.h"
+#include "util/Config.h"
+
+
+// Mostly frozen project includes
+#include "ent/entityId.h"
+
+typedef  uint8_t u8;
+typedef   int8_t i8;
+typedef uint16_t u16;
+typedef  int16_t i16;
+typedef uint32_t u32;
+typedef  int32_t i32;
+typedef uint64_t u64;
+typedef  int64_t i64;
+typedef  float   f32;
+typedef  double  f64;
+
+//
+//#include "ent/ent.h"
+//#include "df/com.h"
+//#include "map/map.h"
+
+
+
+#include "async++.h"
+
+
+
 
 #endif //PCH_H

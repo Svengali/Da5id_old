@@ -59,6 +59,8 @@ public:
 
     void GetPerfCounters(float &UpdateTime, float &RenderTime);
 
+	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>  mDevice;
+
 private:
     void CreateMeshes();
     void InitializeTextureData();
@@ -79,7 +81,6 @@ private:
     GUI*                        mGUI = nullptr;
 
     Diligent::RefCntAutoPtr<Diligent::ISwapChain> mSwapChain;
-    Diligent::RefCntAutoPtr<Diligent::IRenderDevice>  mDevice;
     Diligent::RefCntAutoPtr<Diligent::IDeviceContext>  mDeviceCtxt;
     std::vector< Diligent::RefCntAutoPtr<Diligent::IDeviceContext> > mDeferredCtxt;
     std::vector< Diligent::RefCntAutoPtr<Diligent::ICommandList> > mCmdLists;
