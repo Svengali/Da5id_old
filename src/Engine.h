@@ -53,13 +53,19 @@ public:
 	Engine(const Settings &settings, AsteroidsSimulation *pAst, GUI* gui, HWND hWnd, Diligent::DeviceType DevType);
     ~Engine();
 
-    void Render(float frameTime, const OrbitCamera& camera, const Settings& settings);
+	void RenderBegin	( float frameTime, const OrbitCamera& camera, const Settings& settings );
+	void RenderObjects	( float frameTime, const OrbitCamera& camera, const Settings& settings );
+	void RenderEnd		( float frameTime, const OrbitCamera& camera, const Settings& settings );
 
     void ResizeSwapChain(HWND outputWindow, unsigned int width, unsigned int height);
 
     void GetPerfCounters(float &UpdateTime, float &RenderTime);
 
 	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>  mDevice;
+
+	Diligent::RefCntAutoPtr<Diligent::ISwapChain> mSwapChain;
+
+	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>  mDeviceCtxt;
 
 private:
     void CreateMeshes();
@@ -80,8 +86,6 @@ private:
 
     GUI*                        mGUI = nullptr;
 
-    Diligent::RefCntAutoPtr<Diligent::ISwapChain> mSwapChain;
-    Diligent::RefCntAutoPtr<Diligent::IDeviceContext>  mDeviceCtxt;
     std::vector< Diligent::RefCntAutoPtr<Diligent::IDeviceContext> > mDeferredCtxt;
     std::vector< Diligent::RefCntAutoPtr<Diligent::ICommandList> > mCmdLists;
     

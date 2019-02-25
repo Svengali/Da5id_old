@@ -123,6 +123,8 @@ void Engine::InitDevice(HWND hWnd, DeviceType DevType)
             auto *pFactoryVk = GetEngineFactoryVk();
             pFactoryVk->CreateDeviceAndContextsVk( Attribs, &mDevice, ppContexts.data(), mNumSubsets-1 );
             pFactoryVk->CreateSwapChainVk( mDevice, ppContexts[0], SwapChainDesc, hWnd, &mSwapChain );
+
+			//mSwapChain->GetDesc().
         }
         break;
 #endif
@@ -772,155 +774,181 @@ void Engine::RenderSubset(Diligent::Uint32 SubsetNum,
 	//*/
 }
 
-void Engine::Render(float frameTime, const OrbitCamera& camera, const Settings& settings)
+void Engine::RenderBegin( float frameTime, const OrbitCamera& camera, const Settings& settings )
 {
-    mFrameAttribs.frameTime = frameTime;
-    mFrameAttribs.camera = &camera;
-    mFrameAttribs.settings = &settings;
-    
-    // Clear the render target
-    float clearcol[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    mDeviceCtxt->SetRenderTargets(0, nullptr, nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-    mDeviceCtxt->ClearRenderTarget(nullptr, clearcol, RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-    mDeviceCtxt->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 0.0f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	mFrameAttribs.frameTime = frameTime;
+	mFrameAttribs.camera = &camera;
+	mFrameAttribs.settings = &settings;
 
-    LONG64 currCounter;
-    QueryPerformanceCounter((LARGE_INTEGER*)&currCounter);
-    mUpdateTicks = currCounter;
-        
-    auto SubsetSize = NUM_ASTEROIDS / (settings.multithreadedRendering ? mNumSubsets : 1);
-    
-    if (settings.multithreadedRendering)
-    {
-        m_NumThreadsCompleted = 0;
-        mUpdateSubsetsSignal.Trigger(true);
-    }
+	// Clear the render target
+	float clearcol[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	mDeviceCtxt->SetRenderTargets( 0, nullptr, nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
+	mDeviceCtxt->ClearRenderTarget( nullptr, clearcol, RESOURCE_STATE_TRANSITION_MODE_VERIFY );
+	mDeviceCtxt->ClearDepthStencil( nullptr, CLEAR_DEPTH_FLAG, 0.0f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
 
-    m_pAst->Update(frameTime, camera.Eye(), settings, 0, SubsetSize);
+	LONG64 currCounter;
+	QueryPerformanceCounter( (LARGE_INTEGER*)& currCounter );
+	mUpdateTicks = currCounter;
 
-    if (settings.multithreadedRendering)
-    {
-        // Wait for worker threads to finish
-        while(m_NumThreadsCompleted < (int)mNumSubsets-1)
-            std::this_thread::yield();
-        // Reset mUpdateSubsetsSignal while all threads are waiting for mRenderSubsetsSignal
-        mUpdateSubsetsSignal.Reset();
-    }
-    
 
-    QueryPerformanceCounter((LARGE_INTEGER*)&currCounter);
-    mUpdateTicks = currCounter-mUpdateTicks;
 
-    mRenderTicks = currCounter;
+}
+	
 
-    if (settings.multithreadedRendering)
-    {
-        // Signal RenderSubsets
-        m_NumThreadsCompleted = 0;
-        mRenderSubsetsSignal.Trigger(true);
-    }
+void Engine::RenderObjects( float frameTime, const OrbitCamera & camera, const Settings & settings )
+{
+	LONG64 currCounter;
 
-    RenderSubset(0, mDeviceCtxt, camera, 0, SubsetSize);
+	auto SubsetSize = NUM_ASTEROIDS / ( settings.multithreadedRendering ? mNumSubsets : 1 );
 
-    if (settings.multithreadedRendering)
-    {
-        // Wait for worker threads to finish
-        while(m_NumThreadsCompleted < (int)mNumSubsets-1)
-            std::this_thread::yield();
-        // Reset mRenderSubsetsSignal while all threads are waiting for mUpdateSubsetsSignal
-        mRenderSubsetsSignal.Reset();
+	if( settings.multithreadedRendering )
+	{
+		m_NumThreadsCompleted = 0;
+		mUpdateSubsetsSignal.Trigger( true );
+	}
 
-        for(auto &cmdList : mCmdLists)
-        {
-            mDeviceCtxt->ExecuteCommandList(cmdList);
-            // Release command lists now to release all outstanding references
-            // In d3d11 mode, command lists hold references to the swap chain's back buffer 
-            // that cause swap chain resize to fail
-            cmdList.Release();
-        }
-    }
+	m_pAst->Update( frameTime, camera.Eye(), settings, 0, SubsetSize );
 
-    // Call FinishFrame() to release dynamic resources allocated by deferred contexts
-    // IMPORTANT: we must wait until the command lists are submitted for execution
-    // because FinishFrame() invalidates all dynamic resources
-    for(auto& ctx : mDeferredCtxt)
-        ctx->FinishFrame();
 
-    mDeviceCtxt->SetRenderTargets(0, nullptr, nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	if( settings.multithreadedRendering )
+	{
+		// Wait for worker threads to finish
+		while( m_NumThreadsCompleted < (int)mNumSubsets - 1 )
+			std::this_thread::yield();
+		// Reset mUpdateSubsetsSignal while all threads are waiting for mRenderSubsetsSignal
+		mUpdateSubsetsSignal.Reset();
+	}
+
+
+	QueryPerformanceCounter( (LARGE_INTEGER*)& currCounter );
+	mUpdateTicks = currCounter - mUpdateTicks;
+
+	mRenderTicks = currCounter;
+
+	if( settings.multithreadedRendering )
+	{
+		// Signal RenderSubsets
+		m_NumThreadsCompleted = 0;
+		mRenderSubsetsSignal.Trigger( true );
+	}
+
+	RenderSubset( 0, mDeviceCtxt, camera, 0, SubsetSize );
+
+	if( settings.multithreadedRendering )
+	{
+		// Wait for worker threads to finish
+		while( m_NumThreadsCompleted < (int)mNumSubsets - 1 )
+			std::this_thread::yield();
+		// Reset mRenderSubsetsSignal while all threads are waiting for mUpdateSubsetsSignal
+		mRenderSubsetsSignal.Reset();
+
+		for( auto& cmdList : mCmdLists )
+		{
+			mDeviceCtxt->ExecuteCommandList( cmdList );
+			// Release command lists now to release all outstanding references
+			// In d3d11 mode, command lists hold references to the swap chain's back buffer 
+			// that cause swap chain resize to fail
+			cmdList.Release();
+		}
+	}
+
+	// Call FinishFrame() to release dynamic resources allocated by deferred contexts
+	// IMPORTANT: we must wait until the command lists are submitted for execution
+	// because FinishFrame() invalidates all dynamic resources
+	for( auto& ctx : mDeferredCtxt )
+		ctx->FinishFrame();
+
+	mDeviceCtxt->SetRenderTargets( 0, nullptr, nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
 
 	/*
-    // Draw skybox
-    {
-        {
-            MapHelper<SkyboxConstantBuffer> skyboxConstants(mDeviceCtxt, mSkyboxConstantBuffer, MAP_WRITE, MAP_FLAG_DISCARD);
-            XMStoreFloat4x4(&skyboxConstants->mViewProjection, camera.ViewProjection());
-        }
+	// Draw skybox
+	{
+		{
+			MapHelper<SkyboxConstantBuffer> skyboxConstants( mDeviceCtxt, mSkyboxConstantBuffer, MAP_WRITE, MAP_FLAG_DISCARD );
+			XMStoreFloat4x4( &skyboxConstants->mViewProjection, camera.ViewProjection() );
+		}
 
-        IBuffer* ia_buffers[] = { mSkyboxVertexBuffer };
-        UINT ia_offsets[] = { 0 };
-        mDeviceCtxt->SetVertexBuffers(0, 1, ia_buffers, ia_offsets, RESOURCE_STATE_TRANSITION_MODE_VERIFY, SET_VERTEX_BUFFERS_FLAG_NONE);
+		IBuffer* ia_buffers[] = { mSkyboxVertexBuffer };
+		UINT ia_offsets[] = { 0 };
+		mDeviceCtxt->SetVertexBuffers( 0, 1, ia_buffers, ia_offsets, RESOURCE_STATE_TRANSITION_MODE_VERIFY, SET_VERTEX_BUFFERS_FLAG_NONE );
 
-        mDeviceCtxt->SetPipelineState(mSkyboxPSO);
-        mDeviceCtxt->CommitShaderResources(mSkyboxSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		mDeviceCtxt->SetPipelineState( mSkyboxPSO );
+		mDeviceCtxt->CommitShaderResources( mSkyboxSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
 
-        DrawAttribs DrawAttrs(6*6, DRAW_FLAG_VERIFY_STATES);
-        mDeviceCtxt->Draw(DrawAttrs);
-    }
+		DrawAttribs DrawAttrs( 6 * 6, DRAW_FLAG_VERIFY_STATES );
+		mDeviceCtxt->Draw( DrawAttrs );
+	}
 	//*/
 
-	//*
-    // Draw sprites and fonts
-    {
-        // Fill in vertices (TODO: could move this vector to be a member - not a big deal)
-        std::vector<UINT> controlVertices;
-        controlVertices.reserve(mGUI->size());
+	/*
+	// Draw sprites and fonts
+	{
+		// Fill in vertices (TODO: could move this vector to be a member - not a big deal)
+		std::vector<UINT> controlVertices;
+		controlVertices.reserve( mGUI->size() );
 
-        {
-            MapHelper<SpriteVertex> vertexBase(mDeviceCtxt, mSpriteVertexBuffer, MAP_WRITE, MAP_FLAG_DISCARD);
-            auto vertexEnd = (SpriteVertex*)vertexBase;
-            
-            for (int i = -1; i < (int)mGUI->size(); ++i) {
-                auto control = i >= 0 ? (*mGUI)[i] : mSprite.get();
-                controlVertices.push_back((UINT)(control->Draw((float)mBackBufferWidth, (float)mBackBufferHeight, vertexEnd) - vertexEnd));
-                vertexEnd += controlVertices.back();
-            }
-        }
+		{
+			MapHelper<SpriteVertex> vertexBase( mDeviceCtxt, mSpriteVertexBuffer, MAP_WRITE, MAP_FLAG_DISCARD );
+			auto vertexEnd = (SpriteVertex*)vertexBase;
 
-        IBuffer* ia_buffers[] = { mSpriteVertexBuffer };
-        Uint32 ia_offsets[] = { 0 };
-        mDeviceCtxt->SetVertexBuffers(0, 1, ia_buffers, ia_offsets, RESOURCE_STATE_TRANSITION_MODE_VERIFY, SET_VERTEX_BUFFERS_FLAG_NONE);
+			for( int i = -1; i < (int)mGUI->size(); ++i ) {
+				auto control = i >= 0 ? ( *mGUI )[i] : mSprite.get();
+				controlVertices.push_back( (UINT)( control->Draw( (float)mBackBufferWidth, (float)mBackBufferHeight, vertexEnd ) - vertexEnd ) );
+				vertexEnd += controlVertices.back();
+			}
+		}
 
-        // Draw
-        UINT vertexStart = 0;
-        for (int i = -1; i < (int)mGUI->size(); ++i) {
-            auto control = i >= 0 ? (*mGUI)[i] : mSprite.get();
-            if (control->Visible()) {
-                if (control->TextureFile().length() == 0) { // Font
-                    mDeviceCtxt->SetPipelineState(mFontPSO);
-                    mDeviceCtxt->CommitShaderResources(mFontSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-                } else { // Sprite
-                    auto textureSRV = mSpriteTextures[control->TextureFile()];
-                    mDeviceCtxt->SetPipelineState(mSpritePSO);
-                    mSpriteSRB->GetVariable(SHADER_TYPE_PIXEL, "Tex")->Set(textureSRV);
-                    mDeviceCtxt->CommitShaderResources(mSpriteSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-                }
-                DrawAttribs DrawAttrs(controlVertices[1+i], DRAW_FLAG_VERIFY_STATES);
-                DrawAttrs.StartVertexLocation = vertexStart;
-                mDeviceCtxt->Draw(DrawAttrs);
-            }
-            vertexStart += controlVertices[1+i];
-        }
-    }
+		IBuffer* ia_buffers[] = { mSpriteVertexBuffer };
+		Uint32 ia_offsets[] = { 0 };
+		mDeviceCtxt->SetVertexBuffers( 0, 1, ia_buffers, ia_offsets, RESOURCE_STATE_TRANSITION_MODE_VERIFY, SET_VERTEX_BUFFERS_FLAG_NONE );
+
+		// Draw
+		UINT vertexStart = 0;
+		for( int i = -1; i < (int)mGUI->size(); ++i ) {
+			auto control = i >= 0 ? ( *mGUI )[i] : mSprite.get();
+			if( control->Visible() ) {
+				if( control->TextureFile().length() == 0 ) { // Font
+					mDeviceCtxt->SetPipelineState( mFontPSO );
+					mDeviceCtxt->CommitShaderResources( mFontSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
+				}
+				else { // Sprite
+					auto textureSRV = mSpriteTextures[control->TextureFile()];
+					mDeviceCtxt->SetPipelineState( mSpritePSO );
+					mSpriteSRB->GetVariable( SHADER_TYPE_PIXEL, "Tex" )->Set( textureSRV );
+					mDeviceCtxt->CommitShaderResources( mSpriteSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
+				}
+				DrawAttribs DrawAttrs( controlVertices[1 + i], DRAW_FLAG_VERIFY_STATES );
+				DrawAttrs.StartVertexLocation = vertexStart;
+				mDeviceCtxt->Draw( DrawAttrs );
+			}
+			vertexStart += controlVertices[1 + i];
+		}
+	}
 	//*/
+
+
+
+}
+
+
+
+void Engine::RenderEnd( float frameTime, const OrbitCamera& camera, const Settings& settings )
+{
+
+	LONG64 currCounter;
+
+
 
 	QueryPerformanceCounter( (LARGE_INTEGER*)& currCounter );
 	mRenderTicks = currCounter - mRenderTicks;
 
 	mSwapChain->Present( settings.vsync ? 1 : 0 );
-
-
 }
 
+	
+
+
+ 
 void Engine::GetPerfCounters(float &UpdateTime, float &RenderTime)
 {
     UpdateTime = (float)mUpdateTicks/(float)mPerfCounterFreq;

@@ -31,6 +31,17 @@
 
 #include "vulkan\vulkan.h"
 
+#include "RenderDeviceVk.h"
+
+#include "VulkanUtilities/VulkanLogicalDevice.h"
+
+#include "DescriptorPoolManager.h"
+
+#include "SwapChainVk.h"
+
+#include "DeviceContextVk.h"
+
+#include "VulkanUtilities\VulkanCommandBuffer.h"
 
 /**
 #include "asteroids_d3d11.h"
@@ -41,6 +52,8 @@
 //*/
 
 ///using namespace DirectX;
+
+IMGUI_IMPL_API LRESULT  ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
 
 
@@ -151,7 +164,7 @@ namespace {
 	}
 
 
-	static void SetupVulkanWindowData( ImGui_ImplVulkanH_WindowData* wd, VkDevice dev, VkPhysicalDevice devPhysical, VkAllocationCallbacks* pAllocator, VkSurfaceKHR surface, int width, int height )
+	static void SetupVulkanWindowData( ImGui_ImplVulkanH_WindowData* wd, VkDevice dev, VkPhysicalDevice devPhysical, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR surface, int width, int height )
 	{
 		wd->Surface = surface;
 
@@ -200,8 +213,96 @@ namespace {
 
 		// Create SwapChain, RenderPass, Framebuffer, etc.
 		ImGui_ImplVulkanH_CreateWindowDataCommandBuffers( devPhysical, dev, queueFamily, wd, pAllocator );
+
+		return;
+
 		ImGui_ImplVulkanH_CreateWindowDataSwapChainAndFramebuffer( devPhysical, dev, wd, pAllocator, width, height );
 	}
+
+
+	static void check_vk_result( VkResult err )
+	{
+		if( err == 0 ) return;
+		printf( "VkResult %d\n", err );
+		if( err < 0 )
+			abort();
+	}
+
+
+	static void FrameRender( ImGui_ImplVulkanH_WindowData *wd, VkDevice dev, VkCommandBuffer cmdBuf )
+	{
+		VkResult err;
+
+		/*
+		VkSemaphore& image_acquired_semaphore = wd->Frames[wd->FrameIndex].ImageAcquiredSemaphore;
+		err = vkAcquireNextImageKHR( dev, wd->Swapchain, UINT64_MAX, image_acquired_semaphore, VK_NULL_HANDLE, &wd->FrameIndex );
+		check_vk_result( err );
+
+		ImGui_ImplVulkanH_FrameData* fd = &wd->Frames[wd->FrameIndex];
+		{
+			err = vkWaitForFences( dev, 1, &fd->Fence, VK_TRUE, UINT64_MAX );	// wait indefinitely instead of periodically checking
+			check_vk_result( err );
+
+			err = vkResetFences( dev, 1, &fd->Fence );
+			check_vk_result( err );
+		}
+
+
+		{
+			err = vkResetCommandPool( dev, fd->CommandPool, 0 );
+			check_vk_result( err );
+			VkCommandBufferBeginInfo info = {};
+			info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+			err = vkBeginCommandBuffer( fd->CommandBuffer, &info );
+			check_vk_result( err );
+		}
+		*/
+
+		/*
+		{
+			VkRenderPassBeginInfo info = {};
+			info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			info.renderPass = 0;
+			info.framebuffer = wd->Framebuffer[wd->FrameIndex];
+			info.renderArea.extent.width = wd->Width;
+			info.renderArea.extent.height = wd->Height;
+			info.clearValueCount = 1;
+			info.pClearValues = &wd->ClearValue;
+			vkCmdBeginRenderPass( cmdBuf, &info, VK_SUBPASS_CONTENTS_INLINE );
+		}
+
+		//*/
+
+
+		// Record Imgui Draw Data and draw funcs into command buffer
+		ImGui_ImplVulkan_RenderDrawData( ImGui::GetDrawData(), cmdBuf );
+
+		/*
+		// Submit command buffer
+		vkCmdEndRenderPass( cmdBuf );
+		{
+			VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			VkSubmitInfo info = {};
+			info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			info.waitSemaphoreCount = 1;
+			//info.pWaitSemaphores = &image_acquired_semaphore;
+			info.pWaitDstStageMask = &wait_stage;
+			info.commandBufferCount = 1;
+			info.pCommandBuffers = &cmdBuf;
+			info.signalSemaphoreCount = 1;
+			//info.pSignalSemaphores = &fd->RenderCompleteSemaphore;
+
+			err = vkEndCommandBuffer( cmdBuf );
+			check_vk_result( err );
+
+			//err = vkQueueSubmit( queue, 1, &info, fd->Fence );
+			//check_vk_result( err );
+		}
+		//*/
+	}
+
+
 
 
 
@@ -218,7 +319,11 @@ LRESULT CALLBACK WindowProc(
 	WPARAM wParam,
 	LPARAM lParam )
 {
+
+	ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
+
 	switch( message ) {
+
 	case WM_DESTROY:
 		/**
 		// If all workloads are null, we are recreating the window
@@ -272,7 +377,7 @@ LRESULT CALLBACK WindowProc(
 			break;
 		}
 
-		return 0;
+		return DefWindowProc( hWnd, message, wParam, lParam );
 	}
 
 	case WM_KEYDOWN:
@@ -392,8 +497,13 @@ LRESULT CALLBACK WindowProc(
 		LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
 		lpMMI->ptMinTrackSize.x = 320;
 		lpMMI->ptMinTrackSize.y = 240;
-		return 0;
+		return DefWindowProc( hWnd, message, wParam, lParam );
 	}
+
+	case WM_NCCREATE:
+	case WM_CREATE:
+		return DefWindowProc( hWnd, message, wParam, lParam );
+	break;
 
 	default:
 		return DefWindowProc( hWnd, message, wParam, lParam );
@@ -494,6 +604,69 @@ void CreateDemoWindow( HWND& hWnd )
 
 	SetForegroundWindow( hWnd );
 }
+
+
+
+
+void SetupIMGUI( HWND hWnd, ImGui_ImplVulkanH_WindowData *pWindowData )
+{
+
+	const auto pDev = cast<Diligent::IRenderDeviceVk*>( gWorkloadDE->mDevice.RawPtr() );
+
+	auto vkDev = pDev->GetVkDevice();
+	auto vkPhysical = pDev->GetVkPhysicalDevice();
+
+	auto vkSwapChain = cast<Diligent::ISwapChainVk*>( gWorkloadDE->mSwapChain.RawPtr() );
+
+	auto surface = vkSwapChain->GetVkSurfaceKHR();
+
+
+	SetupVulkanWindowData( pWindowData, vkDev, vkPhysical, pDev->GetLogicalDevice().m_VkAllocator, surface, gSettings.windowWidth, gSettings.windowHeight );
+
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsClassic();
+
+	// Setup Platform/Renderer bindings
+
+	ImGui_ImplWin32_Init( hWnd );
+
+	ImGui_ImplVulkan_InitInfo init_info = {};
+	init_info.Device = vkDev;
+	init_info.PhysicalDevice = vkPhysical;
+	init_info.PipelineCache = VK_NULL_HANDLE;
+
+	init_info.Allocator = pDev->GetLogicalDevice().m_VkAllocator;
+
+	init_info.CheckVkResultFn = check_vk_result;
+
+
+	auto imguiPool = pDev->GetDynamicDescriptorPool().GetPool( "IMGUI" );
+
+	init_info.DescriptorPool = imguiPool;
+
+
+	ImGui_ImplVulkan_Init( &init_info, pWindowData->RenderPass );
+
+
+	VulkanUtilities::CommandPoolWrapper CmdPool;
+	VkCommandBuffer vkCmdBuff;
+	pDev->AllocateTransientCmdPool( CmdPool, vkCmdBuff, "Setup fonts for imgui" );
+
+	ImGui_ImplVulkan_CreateFontsTexture( vkCmdBuff );
+
+	pDev->ExecuteAndDisposeTransientCmdBuff( 0, vkCmdBuff, std::move( CmdPool ) );
+
+
+}
+
+
+
+
 
 int main( int argc, char** argv )
 {
@@ -653,13 +826,18 @@ int main( int argc, char** argv )
 	POINTER_INFO pointerInfo = {};
 
 	timeBeginPeriod( 1 );
-	EnableMouseInPointer( TRUE );
+	//EnableMouseInPointer( TRUE );
 
 	float filteredUpdateTime = 0.0f;
 	float filteredRenderTime = 0.0f;
 	float filteredFrameTime = 0.0f;
 	for(;;)
 	{
+		PROFILE( main_loop );
+
+		ImGui_ImplVulkanH_WindowData windowData;
+		auto setupIMGUI = false;
+
 		MSG msg = {};
 		while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) {
 			if( msg.message == WM_QUIT ) {
@@ -690,58 +868,19 @@ int main( int argc, char** argv )
 			if( hWnd == NULL || gLastFrameRenderMode != gSettings.mode )
 			{
 				CreateDemoWindow( hWnd );
-
-
-
-				const auto pDev = gWorkloadDE->mDevice.RawPtr();
-
-				PROFILE(IMGUI_GENERATION);
-
-
-
-
-				ImGui_ImplVulkanH_WindowData windowData;
-				SetupVulkanWindowData( &windowData, nullptr, nullptr, nullptr, nullptr, gSettings.windowWidth, gSettings.windowHeight );
-
-				ImGui::CreateContext();
-				ImGuiIO& io = ImGui::GetIO(); (void)io;
-				//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-
-				// Setup Dear ImGui style
-				ImGui::StyleColorsDark();
-				//ImGui::StyleColorsClassic();
-
-				// Setup Platform/Renderer bindings
-
-				ImGui_ImplWin32_Init(hWnd);
-
-				ImGui_ImplVulkan_InitInfo init_info = {};
-
-				/*
-				///init_info.Instance = g_Instance;
-				init_info.PhysicalDevice = g_PhysicalDevice;
-				init_info.Device = g_Device;
-				///init_info.QueueFamily = g_QueueFamily;
-				///init_info.Queue = g_Queue;
-				init_info.PipelineCache = g_PipelineCache;
-				init_info.DescriptorPool = g_DescriptorPool;
-				init_info.Allocator = g_Allocator;
-				init_info.CheckVkResultFn = check_vk_result;
-				//*/
-
-
-				ImGui_ImplVulkan_Init( &init_info, windowData.RenderPass );
-
-
 			}
 
 
 
 			InitWorkload( hWnd, &asteroids );
 
+			setupIMGUI = true;
+
 			gLastFrameRenderMode = gSettings.mode;
 			gUpdateWorkload = false;
 		}
+
+
 
 		// Still need to process inertia even when no interaction is happening
 		gCamera.ProcessInertia();
@@ -832,11 +971,77 @@ int main( int argc, char** argv )
 			///	gWorkloadD3D12->Render( (float)frameTime, gCamera, gSettings );
 			break;
 
+
+
+
 		case Settings::RenderMode::DiligentD3D11:
 		case Settings::RenderMode::DiligentD3D12:
 		case Settings::RenderMode::DiligentVulkan:
 			if( gWorkloadDE )
-				gWorkloadDE->Render( (float)frameTime, gCamera, gSettings );
+			{
+				gWorkloadDE->RenderBegin( (float)frameTime, gCamera, gSettings );
+
+				//*
+
+				if( setupIMGUI )
+				{
+					SetupIMGUI( hWnd, &windowData );
+					setupIMGUI = false;
+				}
+
+				ImGui_ImplWin32_NewFrame();
+				ImGui_ImplVulkan_NewFrame();
+				ImGui::NewFrame();
+
+				static bool s_show_demo_window = true;
+
+				if( s_show_demo_window )
+				{
+					ImGui::ShowDemoWindow( &s_show_demo_window );
+				}
+
+				ImGui::Render();
+
+				//*/
+
+				
+
+
+
+				//gWorkloadDE->RenderObjects( (float)frameTime, gCamera, gSettings );
+
+
+				//*
+				{
+					const auto pDev = cast<Diligent::IRenderDeviceVk*>( gWorkloadDE->mDevice.RawPtr() );
+
+					auto vkDev = pDev->GetVkDevice();
+
+					//VulkanUtilities::CommandPoolWrapper CmdPool;
+					//VkCommandBuffer vkCmdBuff;
+					//pDev->AllocateTransientCmdPool( CmdPool, vkCmdBuff, "Another pool" );
+
+					auto pDevCtx = cast<Diligent::IDeviceContextVk*>( gWorkloadDE->mDeviceCtxt.RawPtr() );
+
+					auto vkCmdBuff = pDevCtx->GetCommandBuffer().GetVkCmdBuffer();
+
+					FrameRender( &windowData, vkDev, vkCmdBuff );
+
+					//pDev->ExecuteAndDisposeTransientCmdBuff( 0, vkCmdBuff, std::move( CmdPool ) );
+
+
+				}
+
+
+				//*/
+
+
+				gWorkloadDE->RenderEnd( (float)frameTime, gCamera, gSettings );
+
+				ImGui::EndFrame();
+
+
+			}
 			break;
 		}
 
@@ -853,6 +1058,9 @@ int main( int argc, char** argv )
 			}
 
 		}
+
+
+
 
 		// All done?
 		if( gSettings.closeAfterSeconds > 0.0 && elapsedTime > gSettings.closeAfterSeconds ) {

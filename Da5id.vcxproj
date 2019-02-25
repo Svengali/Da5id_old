@@ -370,7 +370,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\include;third_party\DiligentCore\Platforms\Basic\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OmitFramePointers>false</OmitFramePointers>
       <MinimalRebuild>true</MinimalRebuild>
@@ -396,7 +396,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\include;third_party\DiligentCore\Platforms\Basic\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>true</MinimalRebuild>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -421,7 +421,7 @@
       <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;STBRP_STATIC;STB_RECT_PACK_IMPLEMENTATION;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\include;third_party\DiligentCore\Platforms\Basic\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -443,7 +443,7 @@
       <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;STBRP_STATIC;STB_RECT_PACK_IMPLEMENTATION;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\include;third_party\DiligentCore\Platforms\Basic\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
