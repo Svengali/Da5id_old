@@ -71,7 +71,10 @@ namespace {
 
 	OrbitCamera gCamera;
 
-	ImGui_ImplVulkanH_WindowData g_WindowData;
+	auto g_setupIMGUI = false;
+
+
+	//ImGui_ImplVulkanH_WindowData g_WindowData;
 
 
 	/**
@@ -246,8 +249,9 @@ namespace {
 			err = vkResetFences( dev, 1, &fd->Fence );
 			check_vk_result( err );
 		}
+		//*/
 
-
+		/*
 		{
 			err = vkResetCommandPool( dev, fd->CommandPool, 0 );
 			check_vk_result( err );
@@ -257,7 +261,7 @@ namespace {
 			err = vkBeginCommandBuffer( fd->CommandBuffer, &info );
 			check_vk_result( err );
 		}
-		*/
+		//*/
 
 		/*
 		{
@@ -373,7 +377,16 @@ LRESULT CALLBACK WindowProc(
 		case Settings::RenderMode::DiligentD3D12:
 		case Settings::RenderMode::DiligentVulkan:
 			if( gWorkloadDE )
+			{
 				gWorkloadDE->ResizeSwapChain( hWnd, gSettings.renderWidth, gSettings.renderHeight );
+
+				ImGui_ImplVulkan_InvalidateDeviceObjects();
+
+				g_setupIMGUI = true;
+			}
+
+				
+
 			break;
 		}
 
@@ -836,7 +849,6 @@ int main( int argc, char** argv )
 		PROFILE( main_loop );
 
 		ImGui_ImplVulkanH_WindowData windowData;
-		auto setupIMGUI = false;
 
 		MSG msg = {};
 		while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) {
@@ -874,7 +886,7 @@ int main( int argc, char** argv )
 
 			InitWorkload( hWnd, &asteroids );
 
-			setupIMGUI = true;
+			g_setupIMGUI = true;
 
 			gLastFrameRenderMode = gSettings.mode;
 			gUpdateWorkload = false;
@@ -983,10 +995,10 @@ int main( int argc, char** argv )
 
 				//*
 
-				if( setupIMGUI )
+				if( g_setupIMGUI )
 				{
 					SetupIMGUI( hWnd, &windowData );
-					setupIMGUI = false;
+					g_setupIMGUI = false;
 				}
 
 				ImGui_ImplWin32_NewFrame();
@@ -1024,6 +1036,8 @@ int main( int argc, char** argv )
 					auto pDevCtx = cast<Diligent::IDeviceContextVk*>( gWorkloadDE->mDeviceCtxt.RawPtr() );
 
 					auto vkCmdBuff = pDevCtx->GetCommandBuffer().GetVkCmdBuffer();
+
+					//pDevCtx->
 
 					FrameRender( &windowData, vkDev, vkCmdBuff );
 
