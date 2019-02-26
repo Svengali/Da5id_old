@@ -55,6 +55,8 @@
 
 IMGUI_IMPL_API LRESULT  ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
+extern void ShowExampleAppCustomNodeGraph( bool* opened );
+
 
 
 namespace {
@@ -644,6 +646,11 @@ void SetupIMGUI( HWND hWnd, ImGui_ImplVulkanH_WindowData *pWindowData )
 	ImGui::StyleColorsDark();
 	//ImGui::StyleColorsClassic();
 
+	ImGui::GetStyle().FrameRounding = 0.0f;
+	ImGui::GetStyle().ChildRounding = 0.0f;
+	ImGui::GetStyle().PopupRounding = 0.0f;
+	ImGui::GetStyle().WindowRounding = 0.0f;
+
 	// Setup Platform/Renderer bindings
 
 	ImGui_ImplWin32_Init( hWnd );
@@ -1005,11 +1012,19 @@ int main( int argc, char** argv )
 				ImGui_ImplVulkan_NewFrame();
 				ImGui::NewFrame();
 
-				static bool s_show_demo_window = true;
+				static bool s_showDemo = true;
 
-				if( s_show_demo_window )
+				if( s_showDemo )
 				{
-					ImGui::ShowDemoWindow( &s_show_demo_window );
+					ImGui::ShowDemoWindow( &s_showDemo );
+				}
+
+
+				static bool s_showNodegraph = true;
+
+				if (s_showNodegraph )
+				{
+					ShowExampleAppCustomNodeGraph( &s_showNodegraph );
 				}
 
 				ImGui::Render();
