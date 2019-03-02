@@ -73,7 +73,7 @@ namespace {
 
 	OrbitCamera gCamera;
 
-	auto g_setupIMGUI = false;
+	auto g_setupIMGUI = 0;
 
 
 	//ImGui_ImplVulkanH_WindowData g_WindowData;
@@ -92,7 +92,7 @@ namespace {
 	GUI gGUI;
 	GUIText* gFPSControl;
 
-	grx::Engine*    gWorkloadDE = nullptr;
+	grx::Engine*    g_engine = nullptr;
 
 	enum
 	{
@@ -314,6 +314,67 @@ namespace {
 
 } // namespace
 
+static bool s_guiProfilerOpen = true;
+static bool s_profilerResetReq = false;
+
+void guiProfiler()
+{
+
+	ImGui::SetNextWindowPos( ImVec2( 650, 20 ), ImGuiCond_FirstUseEver );
+	ImGui::SetNextWindowSize( ImVec2( 550, 680 ), ImGuiCond_FirstUseEver );
+
+	// Main body of the Demo window starts here.
+	if( !ImGui::Begin( "Profiler", &s_guiProfilerOpen, ImGuiWindowFlags_MenuBar ) )
+	{
+		// Early out if the window is collapsed, as an optimization.
+		ImGui::End();
+		return;
+	}
+	ImGui::Text( "Profiler test" );
+
+
+	if( ImGui::BeginMenuBar() )
+	{
+		if( ImGui::BeginMenu( "Profiler" ) )
+		{
+			static bool s_profilerEnabled = cb::Profiler::GetEnabled();
+
+			ImGui::Checkbox( "Enabled", &s_profilerEnabled );
+
+			if( s_profilerEnabled != cb::Profiler::GetEnabled() )
+			{
+				cb::Profiler::ReqEnabled( s_profilerEnabled );
+			}
+
+			if( ImGui::Button("Dump"))
+			{
+				cb::Profiler::Report( true );
+				s_profilerResetReq = true;
+			}
+
+
+			ImGui::EndMenu();
+		}
+		if( ImGui::BeginMenu( "View" ) )
+		{
+			ImGui::EndMenu();
+		}
+		if( ImGui::BeginMenu( "Help" ) )
+		{
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+
+	//cb::Profiler::SetReportNodes();
+
+
+	ImGui::End();
+}
+
+
+
+
 
 
 
@@ -338,7 +399,7 @@ LRESULT CALLBACK WindowProc(
 			PostQuitMessage( 0 );
 		//*/
 
-		if( gWorkloadDE )
+		if( g_engine )
 			PostQuitMessage( 0 );
 
 
@@ -378,13 +439,13 @@ LRESULT CALLBACK WindowProc(
 		case Settings::RenderMode::DiligentD3D11:
 		case Settings::RenderMode::DiligentD3D12:
 		case Settings::RenderMode::DiligentVulkan:
-			if( gWorkloadDE )
+			if( g_engine )
 			{
-				gWorkloadDE->ResizeSwapChain( hWnd, gSettings.renderWidth, gSettings.renderHeight );
+				g_engine->ResizeSwapChain( hWnd, gSettings.renderWidth, gSettings.renderHeight );
 
 				ImGui_ImplVulkan_InvalidateDeviceObjects();
 
-				g_setupIMGUI = true;
+				g_setupIMGUI = 2;
 			}
 
 				
@@ -577,7 +638,7 @@ int InitWorkload( HWND hWnd, AsteroidsSimulation *pAst )
 	*/
 
 	case Settings::RenderMode::DiligentVulkan:
-		gWorkloadDE = new grx::Engine( gSettings, pAst, &gGUI, hWnd, Diligent::DeviceType::Vulkan );
+		g_engine = new grx::Engine( gSettings, pAst, &gGUI, hWnd, Diligent::DeviceType::Vulkan );
 		break;
 	}
 
@@ -626,12 +687,12 @@ void CreateDemoWindow( HWND& hWnd )
 void SetupIMGUI( HWND hWnd, ImGui_ImplVulkanH_WindowData *pWindowData )
 {
 
-	const auto pDev = cast<Diligent::IRenderDeviceVk*>( gWorkloadDE->mDevice.RawPtr() );
+	const auto pDev = cast<Diligent::IRenderDeviceVk*>( g_engine->mDevice.RawPtr() );
 
 	auto vkDev = pDev->GetVkDevice();
 	auto vkPhysical = pDev->GetVkPhysicalDevice();
 
-	auto vkSwapChain = cast<Diligent::ISwapChainVk*>( gWorkloadDE->mSwapChain.RawPtr() );
+	auto vkSwapChain = cast<Diligent::ISwapChainVk*>( g_engine->mSwapChain.RawPtr() );
 
 	auto surface = vkSwapChain->GetVkSurfaceKHR();
 
@@ -645,11 +706,12 @@ void SetupIMGUI( HWND hWnd, ImGui_ImplVulkanH_WindowData *pWindowData )
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
 	//ImGui::StyleColorsClassic();
-
 	ImGui::GetStyle().FrameRounding = 0.0f;
 	ImGui::GetStyle().ChildRounding = 0.0f;
 	ImGui::GetStyle().PopupRounding = 0.0f;
 	ImGui::GetStyle().WindowRounding = 0.0f;
+	ImGui::GetStyle().TabRounding = 0.0f;
+	ImGui::GetStyle().FrameBorderSize = 1.0f;
 
 	// Setup Platform/Renderer bindings
 
@@ -848,254 +910,273 @@ int main( int argc, char** argv )
 	timeBeginPeriod( 1 );
 	//EnableMouseInPointer( TRUE );
 
+	cb::Profiler::ReqEnabled( true );
+
 	float filteredUpdateTime = 0.0f;
 	float filteredRenderTime = 0.0f;
 	float filteredFrameTime = 0.0f;
 	for(;;)
 	{
-		PROFILE( main_loop );
+		{
+			PROFILE_FN( _GlobalLoop );
 
-		ImGui_ImplVulkanH_WindowData windowData;
+			ImGui_ImplVulkanH_WindowData windowData;
 
-		MSG msg = {};
-		while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) {
-			if( msg.message == WM_QUIT ) {
-				// Cleanup
+			MSG msg = {};
+			while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) {
+				if( msg.message == WM_QUIT ) {
+					// Cleanup
+					///delete gWorkloadD3D11;
+					///delete gWorkloadD3D12;
+					delete g_engine;
+					SafeRelease( &gDXGIFactory );
+					timeEndPeriod( 1 );
+					EnableMouseInPointer( FALSE );
+					return (int)msg.wParam;
+				};
+
+				TranslateMessage( &msg );
+				DispatchMessage( &msg );
+			}
+
+			// If we swap to a new API we need to recreate swap chains
+			if( gLastFrameRenderMode != gSettings.mode || gUpdateWorkload ) {
+				PROFILE_FN( INIT );
+				// Delete workload first so that the window does not
+				// post quit message to the queue
 				///delete gWorkloadD3D11;
+				///gWorkloadD3D11 = nullptr;
 				///delete gWorkloadD3D12;
-				delete gWorkloadDE;
-				SafeRelease( &gDXGIFactory );
-				timeEndPeriod( 1 );
-				EnableMouseInPointer( FALSE );
-				return (int)msg.wParam;
-			};
+				///gWorkloadD3D12 = nullptr;
+				delete g_engine;
+				g_engine = nullptr;
+				if( hWnd == NULL || gLastFrameRenderMode != gSettings.mode )
+				{
+					CreateDemoWindow( hWnd );
+				}
 
-			TranslateMessage( &msg );
-			DispatchMessage( &msg );
-		}
 
-		// If we swap to a new API we need to recreate swap chains
-		if( gLastFrameRenderMode != gSettings.mode || gUpdateWorkload ) {
-			// Delete workload first so that the window does not
-			// post quit message to the queue
-			///delete gWorkloadD3D11;
-			///gWorkloadD3D11 = nullptr;
-			///delete gWorkloadD3D12;
-			///gWorkloadD3D12 = nullptr;
-			delete gWorkloadDE;
-			gWorkloadDE = nullptr;
-			if( hWnd == NULL || gLastFrameRenderMode != gSettings.mode )
-			{
-				CreateDemoWindow( hWnd );
+
+				InitWorkload( hWnd, &asteroids );
+
+				g_setupIMGUI = 2;
+
+				gLastFrameRenderMode = gSettings.mode;
+				gUpdateWorkload = false;
 			}
 
 
 
-			InitWorkload( hWnd, &asteroids );
+			// Still need to process inertia even when no interaction is happening
+			gCamera.ProcessInertia();
 
-			g_setupIMGUI = true;
+			// In D3D12 we'll wait on the GPU before taking the timestamp (more consistent)
+			if( gSettings.mode == Settings::RenderMode::NativeD3D12 ) {
+				///gWorkloadD3D12->WaitForReadyToRender();
+			}
 
-			gLastFrameRenderMode = gSettings.mode;
-			gUpdateWorkload = false;
-		}
+			// Get time delta
+			UINT64 count;
+			QueryPerformanceCounter( (LARGE_INTEGER*)& count );
+			auto rawFrameTime = (double)( count - lastPerfCount ) / perfCounterFreq;
+			elapsedTime += rawFrameTime;
+			lastPerfCount = count;
 
+			// Maintaining absolute time sync is not important in this demo so we can err on the "smoother" side
+			double alpha = 0.2f;
+			frameTime = alpha * rawFrameTime + ( 1.0f - alpha ) * frameTime;
 
+			// Update GUI
+			{
+				PROFILE_FN( _UpdateGui );
 
-		// Still need to process inertia even when no interaction is happening
-		gCamera.ProcessInertia();
+				const char* ModeStr = nullptr;
+				const char* resBindModeStr = "";
+				float updateTime = 0;
+				float renderTime = 0;
+				switch( gSettings.mode )
+				{
+				case Settings::RenderMode::NativeD3D11:
+					ModeStr = "Native D3D11";
+					///gWorkloadD3D11->GetPerfCounters( updateTime, renderTime );
+					break;
 
-		// In D3D12 we'll wait on the GPU before taking the timestamp (more consistent)
-		if( gSettings.mode == Settings::RenderMode::NativeD3D12 ) {
-			///gWorkloadD3D12->WaitForReadyToRender();
-		}
+				case Settings::RenderMode::NativeD3D12:
+					ModeStr = "Native D3D12";
+					///gWorkloadD3D12->GetPerfCounters( updateTime, renderTime );
+					break;
 
-		// Get time delta
-		UINT64 count;
-		QueryPerformanceCounter( (LARGE_INTEGER*)&count );
-		auto rawFrameTime = (double)( count - lastPerfCount ) / perfCounterFreq;
-		elapsedTime += rawFrameTime;
-		lastPerfCount = count;
+				case Settings::RenderMode::DiligentD3D11:
+					ModeStr = "Diligent D3D11";
+					g_engine->GetPerfCounters( updateTime, renderTime );
+					break;
 
-		// Maintaining absolute time sync is not important in this demo so we can err on the "smoother" side
-		double alpha = 0.2f;
-		frameTime = alpha * rawFrameTime + ( 1.0f - alpha ) * frameTime;
+				case Settings::RenderMode::DiligentD3D12:
+				case Settings::RenderMode::DiligentVulkan:
+					ModeStr = gSettings.mode == Settings::RenderMode::DiligentD3D12 ? "Diligent D3D12" : "Diligent Vk";
+					g_engine->GetPerfCounters( updateTime, renderTime );
+					switch( gSettings.resourceBindingMode )
+					{
+					case 0: resBindModeStr = "-d"; break;
+					case 1: resBindModeStr = "-m"; break;
+					case 2: resBindModeStr = "-tm"; break;
+					}
+					break;
+				}
 
-		// Update GUI
-		{
-			const char *ModeStr = nullptr;
-			const char *resBindModeStr = "";
-			float updateTime = 0;
-			float renderTime = 0;
+				float filterScale = 0.02f;
+				filteredUpdateTime = filteredUpdateTime * ( 1.f - filterScale ) + filterScale * updateTime;
+				filteredRenderTime = filteredRenderTime * ( 1.f - filterScale ) + filterScale * renderTime;
+				filteredFrameTime = filteredFrameTime * ( 1.f - filterScale ) + filterScale * (float)frameTime;
+
+				char buffer[256];
+				sprintf_s( buffer, "Da5id %s%s (%dt) - %4.2f ms (%4.2f ms / %4.2f ms)", ModeStr, resBindModeStr, ( gSettings.multithreadedRendering ? gSettings.numThreads : 1 ),
+					1000.f * filteredFrameTime, 1000.f * filteredUpdateTime, 1000.f * filteredRenderTime );
+
+				SetWindowTextA( hWnd, buffer );
+
+				/*
+				if( gSettings.lockFrameRate ) {
+					sprintf_s( buffer, "(Locked)" );
+				}
+				else {
+					sprintf_s( buffer, "%.0f fps", 1.0f / filteredFrameTime );
+				}
+				*/
+				gFPSControl->Text( buffer );
+			}
+
 			switch( gSettings.mode )
 			{
 			case Settings::RenderMode::NativeD3D11:
-				ModeStr = "Native D3D11";
-				///gWorkloadD3D11->GetPerfCounters( updateTime, renderTime );
+				///if( gWorkloadD3D11 )
+				///	gWorkloadD3D11->Render( (float)frameTime, gCamera, gSettings );
 				break;
 
 			case Settings::RenderMode::NativeD3D12:
-				ModeStr = "Native D3D12";
-				///gWorkloadD3D12->GetPerfCounters( updateTime, renderTime );
+				///if( gWorkloadD3D12 )
+				///	gWorkloadD3D12->Render( (float)frameTime, gCamera, gSettings );
 				break;
+
+
+
 
 			case Settings::RenderMode::DiligentD3D11:
-				ModeStr = "Diligent D3D11";
-				gWorkloadDE->GetPerfCounters( updateTime, renderTime );
-				break;
-
 			case Settings::RenderMode::DiligentD3D12:
 			case Settings::RenderMode::DiligentVulkan:
-				ModeStr = gSettings.mode == Settings::RenderMode::DiligentD3D12 ? "Diligent D3D12" : "Diligent Vk";
-				gWorkloadDE->GetPerfCounters( updateTime, renderTime );
-				switch( gSettings.resourceBindingMode )
+				if( g_engine )
 				{
-				case 0: resBindModeStr = "-d"; break;
-				case 1: resBindModeStr = "-m"; break;
-				case 2: resBindModeStr = "-tm"; break;
+					PROFILE_FN( _UpdateEngine );
+
+					g_engine->RenderBegin( (float)frameTime, gCamera, gSettings );
+
+					//*
+
+					if( g_setupIMGUI > 0 )
+					{
+						--g_setupIMGUI;
+
+						if( g_setupIMGUI == 0 )
+						{
+							SetupIMGUI( hWnd, &windowData );
+							g_setupIMGUI = -1;
+						}
+					}
+
+					if( g_setupIMGUI < 0 )
+					{
+						ImGui_ImplWin32_NewFrame();
+						ImGui_ImplVulkan_NewFrame();
+						ImGui::NewFrame();
+
+						static bool s_showDemo = false;
+
+						if( s_showDemo )
+						{
+							ImGui::ShowDemoWindow( &s_showDemo );
+						}
+
+
+						static bool s_showNodegraph = false;
+
+						if( s_showNodegraph )
+						{
+							ShowExampleAppCustomNodeGraph( &s_showNodegraph );
+						}
+
+						static bool s_showProfile = true;
+
+						if( s_showProfile )
+						{
+							guiProfiler();
+						}
+
+
+						ImGui::Render();
+
+						{
+							const auto pDev = cast<Diligent::IRenderDeviceVk*>( g_engine->mDevice.RawPtr() );
+
+							auto vkDev = pDev->GetVkDevice();
+
+							auto pDevCtx = cast<Diligent::IDeviceContextVk*>( g_engine->mDeviceCtxt.RawPtr() );
+
+							auto vkCmdBuff = pDevCtx->GetCommandBuffer().GetVkCmdBuffer();
+
+							FrameRender( &windowData, vkDev, vkCmdBuff );
+
+						}
+					}
+
+
+
+					g_engine->RenderEnd( (float)frameTime, gCamera, gSettings );
+
+					if( g_setupIMGUI < 0 )
+					{
+						PROFILE_FN(_ImGuiEndFrame);
+						ImGui::EndFrame();
+
+					}
+
 				}
 				break;
 			}
 
-			float filterScale = 0.02f;
-			filteredUpdateTime = filteredUpdateTime * ( 1.f - filterScale ) + filterScale * updateTime;
-			filteredRenderTime = filteredRenderTime * ( 1.f - filterScale ) + filterScale * renderTime;
-			filteredFrameTime = filteredFrameTime * ( 1.f - filterScale ) + filterScale * (float)frameTime;
-
-			char buffer[256];
-			sprintf_s( buffer, "Da5id %s%s (%dt) - %4.2f ms (%4.2f ms / %4.2f ms)", ModeStr, resBindModeStr, ( gSettings.multithreadedRendering ? gSettings.numThreads : 1 ),
-				1000.f * filteredFrameTime, 1000.f * filteredUpdateTime, 1000.f * filteredRenderTime );
-
-			SetWindowTextA( hWnd, buffer );
-
-			/*
 			if( gSettings.lockFrameRate ) {
-				sprintf_s( buffer, "(Locked)" );
+
+				UINT64 afterRenderCount;
+				QueryPerformanceCounter( (LARGE_INTEGER*)& afterRenderCount );
+				double renderTime = (double)( afterRenderCount - count ) / perfCounterFreq;
+
+				double targetRenderTime = 1.0 / double( gSettings.lockedFrameRate );
+				double deltaMs = ( targetRenderTime - renderTime ) * 1000.0;
+				if( deltaMs > 1.0 ) {
+					Sleep( (DWORD)deltaMs );
+				}
+
 			}
-			else {
-				sprintf_s( buffer, "%.0f fps", 1.0f / filteredFrameTime );
+
+
+
+
+			// All done?
+			if( gSettings.closeAfterSeconds > 0.0&& elapsedTime > gSettings.closeAfterSeconds ) {
+				SendMessage( hWnd, WM_CLOSE, 0, 0 );
+				break;
 			}
-			*/
-			gFPSControl->Text( buffer );
+
 		}
 
-		switch( gSettings.mode )
+		cb::Profiler::Frame();
+
+		if( s_profilerResetReq  )
 		{
-		case Settings::RenderMode::NativeD3D11:
-			///if( gWorkloadD3D11 )
-			///	gWorkloadD3D11->Render( (float)frameTime, gCamera, gSettings );
-			break;
-
-		case Settings::RenderMode::NativeD3D12:
-			///if( gWorkloadD3D12 )
-			///	gWorkloadD3D12->Render( (float)frameTime, gCamera, gSettings );
-			break;
-
-
-
-
-		case Settings::RenderMode::DiligentD3D11:
-		case Settings::RenderMode::DiligentD3D12:
-		case Settings::RenderMode::DiligentVulkan:
-			if( gWorkloadDE )
-			{
-				gWorkloadDE->RenderBegin( (float)frameTime, gCamera, gSettings );
-
-				//*
-
-				if( g_setupIMGUI )
-				{
-					SetupIMGUI( hWnd, &windowData );
-					g_setupIMGUI = false;
-				}
-
-				ImGui_ImplWin32_NewFrame();
-				ImGui_ImplVulkan_NewFrame();
-				ImGui::NewFrame();
-
-				static bool s_showDemo = true;
-
-				if( s_showDemo )
-				{
-					ImGui::ShowDemoWindow( &s_showDemo );
-				}
-
-
-				static bool s_showNodegraph = true;
-
-				if (s_showNodegraph )
-				{
-					ShowExampleAppCustomNodeGraph( &s_showNodegraph );
-				}
-
-				ImGui::Render();
-
-				//*/
-
-				
-
-
-
-				//gWorkloadDE->RenderObjects( (float)frameTime, gCamera, gSettings );
-
-
-				//*
-				{
-					const auto pDev = cast<Diligent::IRenderDeviceVk*>( gWorkloadDE->mDevice.RawPtr() );
-
-					auto vkDev = pDev->GetVkDevice();
-
-					//VulkanUtilities::CommandPoolWrapper CmdPool;
-					//VkCommandBuffer vkCmdBuff;
-					//pDev->AllocateTransientCmdPool( CmdPool, vkCmdBuff, "Another pool" );
-
-					auto pDevCtx = cast<Diligent::IDeviceContextVk*>( gWorkloadDE->mDeviceCtxt.RawPtr() );
-
-					auto vkCmdBuff = pDevCtx->GetCommandBuffer().GetVkCmdBuffer();
-
-					//pDevCtx->
-
-					FrameRender( &windowData, vkDev, vkCmdBuff );
-
-					//pDev->ExecuteAndDisposeTransientCmdBuff( 0, vkCmdBuff, std::move( CmdPool ) );
-
-
-				}
-
-
-				//*/
-
-
-				gWorkloadDE->RenderEnd( (float)frameTime, gCamera, gSettings );
-
-				ImGui::EndFrame();
-
-
-			}
-			break;
-		}
-
-		if( gSettings.lockFrameRate ) {
-
-			UINT64 afterRenderCount;
-			QueryPerformanceCounter( (LARGE_INTEGER*)&afterRenderCount );
-			double renderTime = (double)( afterRenderCount - count ) / perfCounterFreq;
-
-			double targetRenderTime = 1.0 / double( gSettings.lockedFrameRate );
-			double deltaMs = ( targetRenderTime - renderTime ) * 1000.0;
-			if( deltaMs > 1.0 ) {
-				Sleep( (DWORD)deltaMs );
-			}
-
+			s_profilerResetReq = false;
+			cb::Profiler::Reset();
 		}
 
 
-
-
-		// All done?
-		if( gSettings.closeAfterSeconds > 0.0 && elapsedTime > gSettings.closeAfterSeconds ) {
-			SendMessage( hWnd, WM_CLOSE, 0, 0 );
-			break;
-		}
 	}
 
 	// Shouldn't get here
