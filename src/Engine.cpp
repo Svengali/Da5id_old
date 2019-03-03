@@ -115,7 +115,7 @@ void Engine::InitDevice(HWND hWnd, DeviceType DevType)
         case DeviceType::Vulkan:
         {
             EngineVkAttribs Attribs;
-            Attribs.DynamicHeapSize = 256 * 1024 * 1024;
+            Attribs.DynamicHeapSize = 1024 * 1024 * 1024;
 #if ENGINE_DLL
             if(!GetEngineFactoryVulkan)
                 LoadGraphicsEngineVk(GetEngineFactoryVulkan);
@@ -169,10 +169,10 @@ Engine::Engine(const Settings &settings, AsteroidsSimulation* pAst, GUI* gui, HW
 {
     QueryPerformanceFrequency((LARGE_INTEGER*)&mPerfCounterFreq);
 
-    //mNumSubsets = std::max(settings.numThreads,1);
-    //mNumSubsets = std::min(settings.numThreads,32);
+    mNumSubsets = std::max(settings.numThreads,1);
+    mNumSubsets = std::min(settings.numThreads,32);
 
-	mNumSubsets = 2;
+	//mNumSubsets = 2;
 
     m_BindingMode = static_cast<BindingMode>(settings.resourceBindingMode);
 

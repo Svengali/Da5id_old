@@ -393,7 +393,7 @@ void guiProfiler()
 		ImGui::EndMenuBar();
 	}
 
-	ImGui::Text( "Profiler test" );
+	ImGui::Text( "Profiler Waste: %.2f", cb::Profiler::Waste() * 1000 );
 
 	std::vector<cb::Profiler::ProfileNode *> nodes;
 
