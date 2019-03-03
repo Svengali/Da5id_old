@@ -797,6 +797,8 @@ void Engine::RenderBegin( float frameTime, const OrbitCamera& camera, const Sett
 
 void Engine::RenderObjects( float frameTime, const OrbitCamera & camera, const Settings & settings )
 {
+	PROFILE_FN();
+
 	LONG64 currCounter;
 
 	auto SubsetSize = NUM_ASTEROIDS / ( settings.multithreadedRendering ? mNumSubsets : 1 );

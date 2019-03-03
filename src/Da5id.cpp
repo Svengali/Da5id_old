@@ -314,6 +314,35 @@ namespace {
 
 } // namespace
 
+
+void guiDrawNodeTable(cb::Profiler::ProfileNode *pNode)
+{
+	const u32 millis = cast<u32>( pNode->Last().m_seconds * 1000 );
+
+	ImGuiTreeNodeFlags flags = 0;
+
+	if( !pNode->m_child ) flags |= ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_Leaf;
+
+	if( ImGui::TreeNodeEx( pNode->m_name, flags, "%s %i", pNode->m_name, millis ) )
+	{
+		if( pNode->m_child )
+		{
+			guiDrawNodeTable( pNode->m_child );
+		}
+		ImGui::TreePop();
+	}
+
+	if( pNode->m_sibling )
+	{
+		guiDrawNodeTable( pNode->m_sibling );
+	}
+
+
+
+}
+
+
+
 static bool s_guiProfilerOpen = true;
 static bool s_profilerResetReq = false;
 
@@ -330,8 +359,6 @@ void guiProfiler()
 		ImGui::End();
 		return;
 	}
-	ImGui::Text( "Profiler test" );
-
 
 	if( ImGui::BeginMenuBar() )
 	{
@@ -366,7 +393,19 @@ void guiProfiler()
 		ImGui::EndMenuBar();
 	}
 
-	//cb::Profiler::SetReportNodes();
+	ImGui::Text( "Profiler test" );
+
+	std::vector<cb::Profiler::ProfileNode *> nodes;
+
+	cb::Profiler::GetAllNodes( &nodes );
+
+	for(size_t i = 0; i < nodes.size(); ++i)
+	{
+		guiDrawNodeTable( nodes[i] );
+	}
+
+	s_profilerResetReq = true;
+
 
 
 	ImGui::End();
@@ -1070,6 +1109,11 @@ int main( int argc, char** argv )
 
 					g_engine->RenderBegin( (float)frameTime, gCamera, gSettings );
 
+					{
+						PROFILE_FN( _UpdateEngine );
+						g_engine->RenderObjects( (float)frameTime, gCamera, gSettings );
+					}
+
 					//*
 
 					if( g_setupIMGUI > 0 )
@@ -1085,6 +1129,8 @@ int main( int argc, char** argv )
 
 					if( g_setupIMGUI < 0 )
 					{
+						PROFILE_FN( _ImGuiStartFrame );
+
 						ImGui_ImplWin32_NewFrame();
 						ImGui_ImplVulkan_NewFrame();
 						ImGui::NewFrame();
@@ -1129,8 +1175,10 @@ int main( int argc, char** argv )
 					}
 
 
-
-					g_engine->RenderEnd( (float)frameTime, gCamera, gSettings );
+					{
+						PROFILE_FN( _EngineRenderEnd );
+						g_engine->RenderEnd( (float)frameTime, gCamera, gSettings );
+					}
 
 					if( g_setupIMGUI < 0 )
 					{
