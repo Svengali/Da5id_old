@@ -169,8 +169,10 @@ Engine::Engine(const Settings &settings, AsteroidsSimulation* pAst, GUI* gui, HW
 {
     QueryPerformanceFrequency((LARGE_INTEGER*)&mPerfCounterFreq);
 
-    mNumSubsets = std::max(settings.numThreads,1);
-    mNumSubsets = std::min(settings.numThreads,32);
+    //mNumSubsets = std::max(settings.numThreads,1);
+    //mNumSubsets = std::min(settings.numThreads,32);
+
+	mNumSubsets = 2;
 
     m_BindingMode = static_cast<BindingMode>(settings.resourceBindingMode);
 
@@ -683,34 +685,42 @@ static_assert(sizeof(IndexType) == 2, "Expecting 16-bit index buffer");
 
 void Engine::WorkerThreadFunc(Engine *pThis, Diligent::Uint32 ThreadNum)
 {
+	cb::Profiler::ReqEnabled(true);
+	cb::Profiler::Frame();
+
     for (;;)
     {
-        // Wait for UpdateSubsets signal
-        auto SignalledValue = pThis->mUpdateSubsetsSignal.Wait();
-        if(SignalledValue < 0)
-            return;
+		{
+			PROFILE_FN();
+			// Wait for UpdateSubsets signal
+			auto SignalledValue = pThis->mUpdateSubsetsSignal.Wait();
+			if( SignalledValue < 0 )
+				return;
 
-        auto SubsetSize = NUM_ASTEROIDS / pThis->mNumSubsets;
-        auto SubsetStart = SubsetSize * (ThreadNum+1);
-        auto &FrameAttribs = pThis->mFrameAttribs;
-        
-        pThis->m_pAst->Update(FrameAttribs.frameTime, FrameAttribs.camera->Eye(), *FrameAttribs.settings, SubsetStart, SubsetSize);
-        
-        // Increment number of completed threads
-        ++pThis->m_NumThreadsCompleted;
+			auto SubsetSize = NUM_ASTEROIDS / pThis->mNumSubsets;
+			auto SubsetStart = SubsetSize * ( ThreadNum + 1 );
+			auto & FrameAttribs = pThis->mFrameAttribs;
+
+			pThis->m_pAst->Update( FrameAttribs.frameTime, FrameAttribs.camera->Eye(), *FrameAttribs.settings, SubsetStart, SubsetSize );
+
+			// Increment number of completed threads
+			++pThis->m_NumThreadsCompleted;
 
 
-        // Wait for RenderSubsets signal
-        pThis->mRenderSubsetsSignal.Wait();
+			// Wait for RenderSubsets signal
+			pThis->mRenderSubsetsSignal.Wait();
 
-        pThis->RenderSubset(1+ThreadNum, pThis->mDeferredCtxt[ThreadNum], *FrameAttribs.camera, SubsetStart, SubsetSize);
+			pThis->RenderSubset( 1 + ThreadNum, pThis->mDeferredCtxt[ThreadNum], *FrameAttribs.camera, SubsetStart, SubsetSize );
 
-        RefCntAutoPtr<ICommandList> pCmdList;
-        pThis->mCmdLists[ThreadNum].Release();
-        pThis->mDeferredCtxt[ThreadNum]->FinishCommandList(&pThis->mCmdLists[ThreadNum]);
-        
-        // Increment number of completed threads
-        ++pThis->m_NumThreadsCompleted;
+			RefCntAutoPtr<ICommandList> pCmdList;
+			pThis->mCmdLists[ThreadNum].Release();
+			pThis->mDeferredCtxt[ThreadNum]->FinishCommandList( &pThis->mCmdLists[ThreadNum] );
+
+			// Increment number of completed threads
+			++pThis->m_NumThreadsCompleted;
+
+		}
+		cb::Profiler::Frame();
     }
 }
 
@@ -720,6 +730,8 @@ void Engine::RenderSubset(Diligent::Uint32 SubsetNum,
                              Uint32 startIdx, 
                              Uint32 numAsteroids)
 {
+	PROFILE_FN();
+
     pCtx->SetRenderTargets(0, nullptr, nullptr, RESOURCE_STATE_TRANSITION_MODE_VERIFY);
     
     // Frame data
@@ -754,22 +766,28 @@ void Engine::RenderSubset(Diligent::Uint32 SubsetNum,
 
         if( m_BindingMode == BindingMode::Dynamic )
         {
-            pVar->Set(mTextureSRVs[staticData->textureIndex]);
+			PROFILE_FN( _CommitShaderRes_Dynamic );
+			pVar->Set(mTextureSRVs[staticData->textureIndex]);
             pCtx->CommitShaderResources(mAsteroidsSRBs[SubsetNum], RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
         }
         else if( m_BindingMode == BindingMode::Mutable )
         {
-            pCtx->CommitShaderResources(mAsteroidsSRBs[drawIdx], RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			PROFILE_FN( _CommitShaderRes_Mutable );
+			pCtx->CommitShaderResources(mAsteroidsSRBs[drawIdx], RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
         }
         else if( m_BindingMode == BindingMode::TextureMutable )
         {
-            pCtx->CommitShaderResources(mAsteroidsSRBs[staticData->textureIndex], RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			PROFILE_FN( _CommitShaderRes_TexMutable );
+			pCtx->CommitShaderResources(mAsteroidsSRBs[staticData->textureIndex], RESOURCE_STATE_TRANSITION_MODE_VERIFY);
         }
 
-        DrawAttribs attribs(dynamicData->indexCount, VT_UINT16, DRAW_FLAG_VERIFY_STATES);
-        attribs.FirstIndexLocation = dynamicData->indexStart;
-        attribs.BaseVertex = staticData->vertexStart;
-        pCtx->Draw(attribs);
+		{
+			PROFILE_FN( _DrawAttribs );
+			DrawAttribs attribs( dynamicData->indexCount, VT_UINT16, DRAW_FLAG_VERIFY_STATES );
+			attribs.FirstIndexLocation = dynamicData->indexStart;
+			attribs.BaseVertex = staticData->vertexStart;
+			pCtx->Draw( attribs );
+		}
     }
 	//*/
 }
@@ -814,6 +832,7 @@ void Engine::RenderObjects( float frameTime, const OrbitCamera & camera, const S
 
 	if( settings.multithreadedRendering )
 	{
+		PROFILE_FN( _Yield );
 		// Wait for worker threads to finish
 		while( m_NumThreadsCompleted < (int)mNumSubsets - 1 )
 			std::this_thread::yield();
@@ -838,6 +857,8 @@ void Engine::RenderObjects( float frameTime, const OrbitCamera & camera, const S
 
 	if( settings.multithreadedRendering )
 	{
+		PROFILE_FN( _ExecCmdList );
+
 		// Wait for worker threads to finish
 		while( m_NumThreadsCompleted < (int)mNumSubsets - 1 )
 			std::this_thread::yield();
@@ -857,8 +878,12 @@ void Engine::RenderObjects( float frameTime, const OrbitCamera & camera, const S
 	// Call FinishFrame() to release dynamic resources allocated by deferred contexts
 	// IMPORTANT: we must wait until the command lists are submitted for execution
 	// because FinishFrame() invalidates all dynamic resources
-	for( auto& ctx : mDeferredCtxt )
-		ctx->FinishFrame();
+	{
+		PROFILE_FN( _FinishFrame );
+
+		for( auto& ctx : mDeferredCtxt )
+			ctx->FinishFrame();
+	}
 
 	mDeviceCtxt->SetRenderTargets( 0, nullptr, nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
 

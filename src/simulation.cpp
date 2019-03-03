@@ -142,7 +142,8 @@ AsteroidsSimulation::AsteroidsSimulation(unsigned int rngSeed, unsigned int aste
 void AsteroidsSimulation::Update(float frameTime, DirectX::XMVECTOR cameraEye, const Settings& settings,
                                  size_t startIndex, size_t count)
 {
-    bool animate = settings.animate;
+	PROFILE_FN();
+	bool animate = settings.animate;
 
     // TODO: This constant should really depend on resolution and/or be configurable...
     static const float minSubdivSizeLog2 = std::log2f(0.0019f);

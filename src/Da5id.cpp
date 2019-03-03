@@ -805,6 +805,12 @@ int main( int argc, char** argv )
 	gVulkanAvailable = CheckDll( L"vulkan-1.dll" );
 #endif
 
+	cb::Profiler::ReqEnabled( true );
+	cb::Profiler::Frame();
+
+
+
+
 	// Must be done before any windowing-system-like things or else virtualization will kick in
 	auto dpi = SetupDPI();
 	// By default render at the lower resolution and scale up based on system settings
@@ -948,8 +954,6 @@ int main( int argc, char** argv )
 
 	timeBeginPeriod( 1 );
 	//EnableMouseInPointer( TRUE );
-
-	cb::Profiler::ReqEnabled( true );
 
 	float filteredUpdateTime = 0.0f;
 	float filteredRenderTime = 0.0f;
@@ -1110,7 +1114,7 @@ int main( int argc, char** argv )
 					g_engine->RenderBegin( (float)frameTime, gCamera, gSettings );
 
 					{
-						PROFILE_FN( _UpdateEngine );
+						PROFILE_FN( _RenderObjects );
 						g_engine->RenderObjects( (float)frameTime, gCamera, gSettings );
 					}
 
