@@ -315,7 +315,7 @@ namespace {
 } // namespace
 
 
-void guiDrawNodeTable(cb::Profiler::ProfileNode *pNode)
+double guiDrawNodeTable(cb::Profiler::ProfileNode *pNode)
 {
 	const u32 millis = cast<u32>( pNode->Last().m_seconds * 1000 );
 
@@ -327,15 +327,20 @@ void guiDrawNodeTable(cb::Profiler::ProfileNode *pNode)
 	{
 		if( pNode->m_child )
 		{
-			guiDrawNodeTable( pNode->m_child );
+			const auto childrenSum = guiDrawNodeTable( pNode->m_child );
 		}
 		ImGui::TreePop();
 	}
 
+	auto siblingSum = pNode->Last().m_seconds;
+
 	if( pNode->m_sibling )
 	{
-		guiDrawNodeTable( pNode->m_sibling );
+		siblingSum += guiDrawNodeTable( pNode->m_sibling );
+
 	}
+
+	return siblingSum;
 
 
 
@@ -450,8 +455,8 @@ LRESULT CALLBACK WindowProc(
 
 		gSettings.windowWidth = (int)ww;
 		gSettings.windowHeight = (int)wh;
-		gSettings.renderWidth = (UINT)( double( gSettings.windowWidth )  * gSettings.renderScale );
-		gSettings.renderHeight = (UINT)( double( gSettings.windowHeight ) * gSettings.renderScale );
+		gSettings.renderWidth	= (UINT)( double( gSettings.windowWidth )  * gSettings.renderScale );
+		gSettings.renderHeight	= (UINT)( double( gSettings.windowHeight ) * gSettings.renderScale );
 
 		// Update camera projection
 		if( gSettings.renderWidth != 0 && gSettings.renderHeight != 0 )
@@ -719,8 +724,6 @@ void CreateDemoWindow( HWND& hWnd )
 
 	SetForegroundWindow( hWnd );
 }
-
-
 
 
 void SetupIMGUI( HWND hWnd, ImGui_ImplVulkanH_WindowData *pWindowData )
