@@ -25,7 +25,8 @@
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\grx\DGChunkMesh.cpp" />
     <ClCompile Include="src\grx\Material.cpp" />
-    <ClCompile Include="src\mesh.cpp" />
+    <ClCompile Include="src\grx\Mesh.cpp" />
+    <ClCompile Include="src\testmesh.cpp" />
     <ClCompile Include="src\nodes.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -49,7 +50,8 @@
     <ClInclude Include="src\DDSTextureLoader.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\grx\Material.h" />
-    <ClInclude Include="src\mesh.h" />
+    <ClInclude Include="src\grx\Mesh.h" />
+    <ClInclude Include="src\testmesh.h" />
     <ClInclude Include="src\noise.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\simulation.h" />

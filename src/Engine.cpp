@@ -12,7 +12,7 @@
 
 #include "Engine.h"
 
-#include "mesh.h"
+#include "testmesh.h"
 
 #include "TextureLoader.h"
 #include "TextureUtilities.h"

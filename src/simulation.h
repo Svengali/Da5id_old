@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <random>
 
-#include "mesh.h"
+#include "testmesh.h"
 #include "settings.h"
 
 // We may want to ISPC-ify this down the road and just let it own the data structure in AoSoA format or similar

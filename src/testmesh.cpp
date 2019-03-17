@@ -10,7 +10,7 @@
 
 #include "pch.h"
 
-#include "mesh.h"
+#include "testmesh.h"
 #include "noise.h"
 #include <map>
 #include <random>

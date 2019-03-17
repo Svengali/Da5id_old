@@ -10,9 +10,6 @@
     <ClCompile Include="src\Engine.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\mesh.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\pch.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -37,6 +34,12 @@
     <ClCompile Include="src\grx\Material.cpp">
       <Filter>grx</Filter>
     </ClCompile>
+    <ClCompile Include="src\grx\Mesh.cpp">
+      <Filter>grx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\testmesh.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\util.h">
@@ -46,9 +49,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\mesh.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\noise.h">
@@ -74,6 +74,12 @@
     </ClInclude>
     <ClInclude Include="src\grx\Material.h">
       <Filter>grx</Filter>
+    </ClInclude>
+    <ClInclude Include="src\grx\Mesh.h">
+      <Filter>grx</Filter>
+    </ClInclude>
+    <ClInclude Include="src\testmesh.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
