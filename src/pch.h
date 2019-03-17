@@ -50,22 +50,20 @@
 
 // Diligenty
 
-#if D3D11_SUPPORTED
-#include "RenderDeviceFactoryD3D11.h"
-#endif
-
-#if D3D12_SUPPORTED
-#include "RenderDeviceFactoryD3D12.h"
-#endif
-
-
-#if GL_SUPPORTED
-#include "RenderDeviceFactoryOpenGL.h"
-#endif
 
 #if VULKAN_SUPPORTED
 #include "RenderDeviceFactoryVk.h"
 #endif
+
+#include "RenderDevice.h"
+#include "SwapChain.h"
+#include "DeviceContext.h"
+#include "RefCntAutoPtr.h"
+#include "ThreadSignal.h"
+#include "BasicShaderSourceStreamFactory.h"
+
+
+
 
 #include "StringTools.h"
 #include "MapHelper.h"
@@ -80,6 +78,7 @@
 
 //
 #include "cblib/Link.h"
+#include "cblib/vec2.h"
 #include "cblib/Vec3.h"
 #include "cblib/Vec3i.h"
 #include "cblib/Frame3.h"

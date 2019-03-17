@@ -10,11 +10,6 @@
 
 #pragma once
 
-#include "RenderDevice.h"
-#include "SwapChain.h"
-#include "DeviceContext.h"
-#include "RefCntAutoPtr.h"
-#include "ThreadSignal.h"
 #include <map>
 #include <mutex>
 #include <atomic>
@@ -50,6 +45,11 @@ struct SkyboxConstantBuffer {
 class Engine
 {
 public:
+
+	static Engine *Inst();
+
+
+
 	Engine(const Settings &settings, AsteroidsSimulation *pAst, GUI* gui, HWND hWnd, Diligent::DeviceType DevType);
     ~Engine();
 
@@ -66,6 +66,9 @@ public:
 	Diligent::RefCntAutoPtr<Diligent::ISwapChain> mSwapChain;
 
 	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>  mDeviceCtxt;
+
+
+	static void Init( Engine *const pEngine );
 
 private:
     void CreateMeshes();

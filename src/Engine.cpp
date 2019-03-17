@@ -12,10 +12,6 @@
 
 #include "Engine.h"
 
-#include "RenderDeviceFactoryVk.h"
-
-#include "BasicShaderSourceStreamFactory.h"
-
 #include "mesh.h"
 
 #include "TextureLoader.h"
@@ -35,25 +31,29 @@ using namespace Diligent;
 namespace Diligent
 {
 #if ENGINE_DLL
-#   if D3D11_SUPPORTED
-        GetEngineFactoryD3D11Type GetEngineFactoryD3D11 = nullptr;
-#   endif
-        
-#   if D3D12_SUPPORTED
-        GetEngineFactoryD3D12Type GetEngineFactoryD3D12 = nullptr;
-#   endif
-
-#   if GL_SUPPORTED
-        GetEngineFactoryOpenGLType GetEngineFactoryOpenGL = nullptr;
-#   endif
-
 #   if VULKAN_SUPPORTED
         GetEngineFactoryVkType GetEngineFactoryVulkan = nullptr;
 #   endif
 #endif
 }
 
-namespace grx {
+namespace grx
+{
+
+static Engine *s_pEngine;
+
+
+
+void Engine::Init( Engine *const pEngine )
+{
+	s_pEngine = pEngine;
+}
+
+Engine *Engine::Inst()
+{
+	return s_pEngine;
+}
+
 
 
 // Create Direct3D device and swap chain
@@ -70,45 +70,6 @@ void Engine::InitDevice(HWND hWnd, DeviceType DevType)
 
     switch (DevType)
     {
-#if D3D11_SUPPORTED
-        case DeviceType::D3D11:
-        {
-            EngineD3D11Attribs DeviceAttribs;
-            DeviceAttribs.DebugFlags = (Uint32)EngineD3D11DebugFlags::VerifyCommittedShaderResources |
-                                        (Uint32)EngineD3D11DebugFlags::VerifyCommittedResourceRelevance;
-
-#if ENGINE_DLL
-            if(!GetEngineFactoryD3D11)
-                LoadGraphicsEngineD3D11(GetEngineFactoryD3D11);
-#endif
-            auto *pFactoryD3D11 = GetEngineFactoryD3D11();
-            pFactoryD3D11->CreateDeviceAndContextsD3D11( DeviceAttribs, &mDevice, ppContexts.data(), mNumSubsets-1 );
-            pFactoryD3D11->CreateSwapChainD3D11( mDevice, ppContexts[0], SwapChainDesc, FullScreenModeDesc{}, hWnd, &mSwapChain );
-        }
-        break;
-#endif
-
-
-#if D3D12_SUPPORTED
-        case DeviceType::D3D12:
-        {
-            EngineD3D12Attribs Attribs;
-            Attribs.GPUDescriptorHeapDynamicSize[0] = 65536*4;
-            Attribs.GPUDescriptorHeapSize[0] = 65536; // For mutable mode
-            Attribs.NumCommandsToFlushCmdList = 1024;
-#ifndef _DEBUG
-            Attribs.DynamicDescriptorAllocationChunkSize[0] = 8192;
-#endif
-#if ENGINE_DLL
-            if(!GetEngineFactoryD3D12)
-                LoadGraphicsEngineD3D12(GetEngineFactoryD3D12);
-#endif
-            auto *pFactoryD3D12 = GetEngineFactoryD3D12();
-            pFactoryD3D12->CreateDeviceAndContextsD3D12( Attribs, &mDevice, ppContexts.data(), mNumSubsets-1 );
-            pFactoryD3D12->CreateSwapChainD3D12( mDevice, ppContexts[0], SwapChainDesc, FullScreenModeDesc{}, hWnd, &mSwapChain );
-        }
-        break;
-#endif
 
 
 #if VULKAN_SUPPORTED
@@ -125,24 +86,6 @@ void Engine::InitDevice(HWND hWnd, DeviceType DevType)
             pFactoryVk->CreateSwapChainVk( mDevice, ppContexts[0], SwapChainDesc, hWnd, &mSwapChain );
 
 			//mSwapChain->GetDesc().
-        }
-        break;
-#endif
-
-
-#if GL_SUPPORTED
-        case DeviceType::OpenGL:
-        {
-#if ENGINE_DLL
-            if (GetEngineFactoryOpenGL == nullptr)
-            {
-                LoadGraphicsEngineOpenGL(GetEngineFactoryOpenGL);
-            }
-#endif
-            EngineGLAttribs CreationAttribs;
-            CreationAttribs.pNativeWndHandle = hWnd;
-            GetEngineFactoryOpenGL()->CreateDeviceAndSwapChainGL(
-                CreationAttribs, &mDevice, &mDeviceCtxt, SwapChainDesc, &mSwapChain);
         }
         break;
 #endif
@@ -172,6 +115,7 @@ Engine::Engine(const Settings &settings, AsteroidsSimulation* pAst, GUI* gui, HW
     mNumSubsets = std::max(settings.numThreads,1);
     mNumSubsets = std::min(settings.numThreads,32);
 
+	// For DEBUG, sometimes its nice to just have a single additional thread to debug threading issues
 	//mNumSubsets = 2;
 
     m_BindingMode = static_cast<BindingMode>(settings.resourceBindingMode);
@@ -188,9 +132,6 @@ Engine::Engine(const Settings &settings, AsteroidsSimulation* pAst, GUI* gui, HW
     const char *spriteFile = nullptr;
     switch(DevType)
     {
-        case DeviceType::D3D11: spriteFile = "DiligentD3D11.dds"; break;
-        case DeviceType::D3D12: spriteFile = "DiligentD3D12.dds"; break;
-        case DeviceType::OpenGL: spriteFile = "DiligentGL.dds"; break;
         case DeviceType::Vulkan: spriteFile = "DiligentVk.dds"; break;
         default: UNEXPECTED("Unexpected device type");
     }
@@ -887,7 +828,7 @@ void Engine::RenderObjects( float frameTime, const OrbitCamera & camera, const S
 
 	mDeviceCtxt->SetRenderTargets( 0, nullptr, nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION );
 
-	/*
+	//*
 	// Draw skybox
 	{
 		{
@@ -907,7 +848,7 @@ void Engine::RenderObjects( float frameTime, const OrbitCamera & camera, const S
 	}
 	//*/
 
-	/*
+	//*
 	// Draw sprites and fonts
 	{
 		// Fill in vertices (TODO: could move this vector to be a member - not a big deal)

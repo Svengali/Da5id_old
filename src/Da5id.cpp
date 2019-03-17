@@ -92,7 +92,7 @@ namespace {
 	GUI gGUI;
 	GUIText* gFPSControl;
 
-	grx::Engine*    g_engine = nullptr;
+	//grx::Engine*    g_engine = nullptr;
 
 	enum
 	{
@@ -443,7 +443,7 @@ LRESULT CALLBACK WindowProc(
 			PostQuitMessage( 0 );
 		//*/
 
-		if( g_engine )
+		if( grx::Engine::Inst() )
 			PostQuitMessage( 0 );
 
 
@@ -483,9 +483,9 @@ LRESULT CALLBACK WindowProc(
 		case Settings::RenderMode::DiligentD3D11:
 		case Settings::RenderMode::DiligentD3D12:
 		case Settings::RenderMode::DiligentVulkan:
-			if( g_engine )
+			if( grx::Engine::Inst() )
 			{
-				g_engine->ResizeSwapChain( hWnd, gSettings.renderWidth, gSettings.renderHeight );
+				grx::Engine::Inst()->ResizeSwapChain( hWnd, gSettings.renderWidth, gSettings.renderHeight );
 
 				ImGui_ImplVulkan_InvalidateDeviceObjects();
 
@@ -682,7 +682,8 @@ int InitWorkload( HWND hWnd, AsteroidsSimulation *pAst )
 	*/
 
 	case Settings::RenderMode::DiligentVulkan:
-		g_engine = new grx::Engine( gSettings, pAst, &gGUI, hWnd, Diligent::DeviceType::Vulkan );
+		auto *pEngine = new grx::Engine( gSettings, pAst, &gGUI, hWnd, Diligent::DeviceType::Vulkan );
+		grx::Engine::Init( pEngine );
 		break;
 	}
 
@@ -729,12 +730,12 @@ void CreateDemoWindow( HWND& hWnd )
 void SetupIMGUI( HWND hWnd, ImGui_ImplVulkanH_WindowData *pWindowData )
 {
 
-	const auto pDev = cast<Diligent::IRenderDeviceVk*>( g_engine->mDevice.RawPtr() );
+	const auto pDev = cast<Diligent::IRenderDeviceVk*>( grx::Engine::Inst()->mDevice.RawPtr() );
 
 	auto vkDev = pDev->GetVkDevice();
 	auto vkPhysical = pDev->GetVkPhysicalDevice();
 
-	auto vkSwapChain = cast<Diligent::ISwapChainVk*>( g_engine->mSwapChain.RawPtr() );
+	auto vkSwapChain = cast<Diligent::ISwapChainVk*>( grx::Engine::Inst()->mSwapChain.RawPtr() );
 
 	auto surface = vkSwapChain->GetVkSurfaceKHR();
 
@@ -974,7 +975,7 @@ int main( int argc, char** argv )
 					// Cleanup
 					///delete gWorkloadD3D11;
 					///delete gWorkloadD3D12;
-					delete g_engine;
+					delete grx::Engine::Inst();
 					SafeRelease( &gDXGIFactory );
 					timeEndPeriod( 1 );
 					EnableMouseInPointer( FALSE );
@@ -994,8 +995,8 @@ int main( int argc, char** argv )
 				///gWorkloadD3D11 = nullptr;
 				///delete gWorkloadD3D12;
 				///gWorkloadD3D12 = nullptr;
-				delete g_engine;
-				g_engine = nullptr;
+				delete grx::Engine::Inst();
+				//g_engine = nullptr;
 				if( hWnd == NULL || gLastFrameRenderMode != gSettings.mode )
 				{
 					CreateDemoWindow( hWnd );
@@ -1054,13 +1055,13 @@ int main( int argc, char** argv )
 
 				case Settings::RenderMode::DiligentD3D11:
 					ModeStr = "Diligent D3D11";
-					g_engine->GetPerfCounters( updateTime, renderTime );
+					grx::Engine::Inst()->GetPerfCounters( updateTime, renderTime );
 					break;
 
 				case Settings::RenderMode::DiligentD3D12:
 				case Settings::RenderMode::DiligentVulkan:
 					ModeStr = gSettings.mode == Settings::RenderMode::DiligentD3D12 ? "Diligent D3D12" : "Diligent Vk";
-					g_engine->GetPerfCounters( updateTime, renderTime );
+					grx::Engine::Inst()->GetPerfCounters( updateTime, renderTime );
 					switch( gSettings.resourceBindingMode )
 					{
 					case 0: resBindModeStr = "-d"; break;
@@ -1110,15 +1111,15 @@ int main( int argc, char** argv )
 			case Settings::RenderMode::DiligentD3D11:
 			case Settings::RenderMode::DiligentD3D12:
 			case Settings::RenderMode::DiligentVulkan:
-				if( g_engine )
+				if( grx::Engine::Inst() )
 				{
 					PROFILE_FN( _UpdateEngine );
 
-					g_engine->RenderBegin( (float)frameTime, gCamera, gSettings );
+					grx::Engine::Inst()->RenderBegin( (float)frameTime, gCamera, gSettings );
 
 					{
 						PROFILE_FN( _RenderObjects );
-						g_engine->RenderObjects( (float)frameTime, gCamera, gSettings );
+						grx::Engine::Inst()->RenderObjects( (float)frameTime, gCamera, gSettings );
 					}
 
 					//*
@@ -1168,11 +1169,11 @@ int main( int argc, char** argv )
 						ImGui::Render();
 
 						{
-							const auto pDev = cast<Diligent::IRenderDeviceVk*>( g_engine->mDevice.RawPtr() );
+							const auto pDev = cast<Diligent::IRenderDeviceVk*>( grx::Engine::Inst()->mDevice.RawPtr() );
 
 							auto vkDev = pDev->GetVkDevice();
 
-							auto pDevCtx = cast<Diligent::IDeviceContextVk*>( g_engine->mDeviceCtxt.RawPtr() );
+							auto pDevCtx = cast<Diligent::IDeviceContextVk*>( grx::Engine::Inst()->mDeviceCtxt.RawPtr() );
 
 							auto vkCmdBuff = pDevCtx->GetCommandBuffer().GetVkCmdBuffer();
 
@@ -1184,7 +1185,7 @@ int main( int argc, char** argv )
 
 					{
 						PROFILE_FN( _EngineRenderEnd );
-						g_engine->RenderEnd( (float)frameTime, gCamera, gSettings );
+						grx::Engine::Inst()->RenderEnd( (float)frameTime, gCamera, gSettings );
 					}
 
 					if( g_setupIMGUI < 0 )

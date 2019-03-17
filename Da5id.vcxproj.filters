@@ -31,6 +31,12 @@
     <ClCompile Include="src\nodes.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\grx\DGChunkMesh.cpp">
+      <Filter>grx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\grx\Material.cpp">
+      <Filter>grx</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\util.h">
@@ -66,6 +72,9 @@
     <ClInclude Include="src\d3dx12.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\grx\Material.h">
+      <Filter>grx</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -73,6 +82,9 @@
     </Filter>
     <Filter Include="shaders">
       <UniqueIdentifier>{c22c0370-2114-4f7e-b967-71fa3ffc0fc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="grx">
+      <UniqueIdentifier>{b19b3738-7bb4-465e-833c-c3fea5d36722}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
