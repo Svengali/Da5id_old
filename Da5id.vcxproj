@@ -24,6 +24,7 @@
     <ClCompile Include="src\DDSTextureLoader.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\grx\DGChunkMesh.cpp" />
+    <ClCompile Include="src\grx\DGRenderable.cpp" />
     <ClCompile Include="src\grx\Material.cpp" />
     <ClCompile Include="src\grx\Mesh.cpp" />
     <ClCompile Include="src\testmesh.cpp" />
@@ -49,6 +50,7 @@
     <ClInclude Include="src\dds.h" />
     <ClInclude Include="src\DDSTextureLoader.h" />
     <ClInclude Include="src\Engine.h" />
+    <ClInclude Include="src\grx\DGRenderable.h" />
     <ClInclude Include="src\grx\Material.h" />
     <ClInclude Include="src\grx\Mesh.h" />
     <ClInclude Include="src\testmesh.h" />

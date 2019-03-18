@@ -40,6 +40,9 @@
     <ClCompile Include="src\testmesh.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\grx\DGRenderable.cpp">
+      <Filter>grx</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\util.h">
@@ -80,6 +83,9 @@
     </ClInclude>
     <ClInclude Include="src\testmesh.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\grx\DGRenderable.h">
+      <Filter>grx</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
