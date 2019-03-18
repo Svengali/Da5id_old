@@ -10,9 +10,6 @@
     <ClCompile Include="src\Engine.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\pch.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\simplexnoise1234.c">
       <Filter>src</Filter>
     </ClCompile>
@@ -43,6 +40,9 @@
     <ClCompile Include="src\grx\DGRenderable.cpp">
       <Filter>grx</Filter>
     </ClCompile>
+    <ClCompile Include="src\pch_da5id.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\util.h">
@@ -55,9 +55,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\noise.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\pch.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\simulation.h">
@@ -86,6 +83,9 @@
     </ClInclude>
     <ClInclude Include="src\grx\DGRenderable.h">
       <Filter>grx</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pch_da5id.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

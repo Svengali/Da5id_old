@@ -7,7 +7,7 @@
 //--------------------------------------------------------------------------------------
 //#include "DXUT.h"
 
-#include "pch.h"
+#include "pch_da5id.h"
 
 #include "DDSTextureLoader.h"
 #include <d3d9.h> // For D3DFMT stuff

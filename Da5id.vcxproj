@@ -29,7 +29,7 @@
     <ClCompile Include="src\grx\Mesh.cpp" />
     <ClCompile Include="src\testmesh.cpp" />
     <ClCompile Include="src\nodes.cpp" />
-    <ClCompile Include="src\pch.cpp">
+    <ClCompile Include="src\pch_da5id.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -55,7 +55,7 @@
     <ClInclude Include="src\grx\Mesh.h" />
     <ClInclude Include="src\testmesh.h" />
     <ClInclude Include="src\noise.h" />
-    <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\pch_da5id.h" />
     <ClInclude Include="src\simulation.h" />
     <ClInclude Include="src\texture.h" />
     <ClInclude Include="src\util.h" />
@@ -375,7 +375,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;STBRP_STATIC;STB_RECT_PACK_IMPLEMENTATION;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch_da5id.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\include;third_party\DiligentCore\Platforms\Basic\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -402,7 +402,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;STBRP_STATIC;STB_RECT_PACK_IMPLEMENTATION;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch_da5id.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\include;third_party\DiligentCore\Platforms\Basic\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -430,7 +430,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;STBRP_STATIC;STB_RECT_PACK_IMPLEMENTATION;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch_da5id.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\include;third_party\DiligentCore\Platforms\Basic\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <StringPooling>true</StringPooling>
@@ -458,7 +458,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>VULKAN_SUPPORTED;PLATFORM_WIN32;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;STBRP_STATIC;STB_RECT_PACK_IMPLEMENTATION;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch_da5id.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>third_party\DiligentCore\Primitives\interface;third_party\DiligentCore\Graphics\GraphicsEngine\interface;third_party\DiligentCore\Common\interface;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\interface;third_party\DiligentCore\Graphics\GraphicsTools\include;third_party\DiligentTools\TextureLoader\interface;third_party\imgui;third_party\imgui\examples;third_party\DiligentCore\External;third_party;third_party\Pham\src;third_party\DiligentCore\Graphics\GraphicsEngineVulkan\include;third_party\DiligentCore\Platforms\Basic\interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
