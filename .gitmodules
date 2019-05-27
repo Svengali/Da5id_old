@@ -16,3 +16,9 @@
 [submodule "third_party/RTS"]
 	path = third_party/RTS
 	url = https://github.com/Svengali/RTS
+[submodule "third_party/cling"]
+	path = third_party/cling
+	url = https://github.com/Svengali/cling
+[submodule "third_party/llvm"]
+	path = third_party/llvm
+	url = https://github.com/Svengali/llvm
