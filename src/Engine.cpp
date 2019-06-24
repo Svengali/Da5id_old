@@ -626,7 +626,7 @@ static_assert(sizeof(IndexType) == 2, "Expecting 16-bit index buffer");
 
 void Engine::WorkerThreadFunc(Engine *pThis, Diligent::Uint32 ThreadNum)
 {
-	cb::Profiler::ReqEnabled(true);
+	///cb::Profiler::ReqEnabled(true);
 	cb::Profiler::Frame();
 
     for (;;)

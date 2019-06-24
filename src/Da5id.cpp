@@ -315,6 +315,7 @@ namespace {
 } // namespace
 
 
+/*
 double guiDrawNodeTable(cb::Profiler::ProfileNode *pNode)
 {
 	const u32 millis = cast<u32>( pNode->Last().m_seconds * 1000 );
@@ -345,7 +346,7 @@ double guiDrawNodeTable(cb::Profiler::ProfileNode *pNode)
 
 
 }
-
+///*/
 
 
 static bool s_guiProfilerOpen = true;
@@ -375,7 +376,7 @@ void guiProfiler()
 
 			if( s_profilerEnabled != cb::Profiler::GetEnabled() )
 			{
-				cb::Profiler::ReqEnabled( s_profilerEnabled );
+				///cb::Profiler::ReqEnabled( s_profilerEnabled );
 			}
 
 			if( ImGui::Button("Dump"))
@@ -398,6 +399,7 @@ void guiProfiler()
 		ImGui::EndMenuBar();
 	}
 
+    /*
 	ImGui::Text( "Profiler Waste: %.2f", cb::Profiler::Waste() * 1000 );
 
 	std::vector<cb::Profiler::ProfileNode *> nodes;
@@ -410,7 +412,7 @@ void guiProfiler()
 	}
 
 	s_profilerResetReq = true;
-
+    ///*/
 
 
 	ImGui::End();
@@ -809,7 +811,7 @@ int main( int argc, char** argv )
 	gVulkanAvailable = CheckDll( L"vulkan-1.dll" );
 #endif
 
-	cb::Profiler::ReqEnabled( true );
+	///cb::Profiler::ReqEnabled( true );
 	cb::Profiler::Frame();
 
 
